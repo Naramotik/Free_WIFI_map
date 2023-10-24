@@ -315,7 +315,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
             children: [
               Row(
                 children: <Widget>[
-                  Expanded(
+                  const Expanded(
                     child: ListTile(
                         leading: Icon(Icons.star_border_sharp),
                         title: Text('Rating')),
@@ -419,7 +419,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
   @override
   Widget build(BuildContext context) {
     bool addingButtonStatus = false;
-    bool userProfileStatus = false;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: YandexMap(
@@ -448,7 +447,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
               // Создание метки при нажатии на карту + Вывод информации о метке
               print('Tapped map at $selectedPoint'); // для проверки
-              final placemark = PlacemarkMapObject(
+              final placemark = 
+              PlacemarkMapObject(
                   mapId: mapObjectId,
                   point: selectedPoint,
                   opacity: 200,
@@ -477,39 +477,34 @@ class _YandexMapTestState extends State<YandexMapTest> {
           }),
       floatingActionButton:
           Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-        Container(
-          decoration: ShapeDecoration(
+        Expanded(
+          flex: 2,
+          child: Container(
+          decoration: const ShapeDecoration(
             color: Colors.black45,
-              shape: CircleBorder(),
-            ),
-            child: IconButton(
-                icon: const Icon(Icons.person),
-                onPressed: () {
-                  if (true) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()));
-                  }
-                }),
+            shape: CircleBorder(),
           ),
-
-        // FloatingActionButton(
-        //   child: Icon(Icons.person),
-        //   backgroundColor: Colors.black87,
-        //   onPressed: () {
-        //     userProfileStatus = true;
-        //   }
-        // ),
-        const SizedBox(
-          height: 600,
+          child: IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () {
+                if (true) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()));
+                }
+              }),
         ),
-        FloatingActionButton(
+        ),
+        Spacer(flex: 5,),
+        Expanded(
+          flex: 1,
+          child: FloatingActionButton(
             backgroundColor: Colors.black87,
             onPressed: () {
               addingButtonStatus = true;
             },
-            child: const Icon(Icons.place)),
+            child: const Icon(Icons.place)),)
       ]),
     );
   }
