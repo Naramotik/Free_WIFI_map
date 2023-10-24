@@ -5,8 +5,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
+import 'loginscreen.dart';
+
 void main() {
-  runApp(const MaterialApp(home: YandexMapTest()));
+  runApp(
+    MaterialApp(routes: {
+      '/': (context) => YandexMapTest(),
+      '/login': (context) => LoginScreen()
+    }, initialRoute: '/'),
+  );
 }
 
 class YandexMapTest extends StatefulWidget {
@@ -21,8 +28,10 @@ class _YandexMapTestState extends State<YandexMapTest> {
   late YandexMapController controller;
   final List<MapObject> mapObjects = [];
   MapObjectId mapObjectId = const MapObjectId('selPoint');
-  final animation = const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
-  static const Point _startPoint = Point(latitude: 56.129057, longitude: 40.406635);
+  final animation =
+      const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
+  static const Point _startPoint =
+      Point(latitude: 56.129057, longitude: 40.406635);
 
   // Логика для создания нового id для метки
   int counter = 1;
@@ -384,8 +393,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   // Всплывающее меню (вызов меню)
   void _showToast(Point point) {
-    var arr = [1,2,3,4];
-    var mark = (arr.reduce((a,b)=>a+b)/arr.length).toString();
+    var arr = [1, 2, 3, 4];
+    var mark = (arr.reduce((a, b) => a + b) / arr.length).toString();
     showModalBottomSheet(
         context: context,
         shape: (const RoundedRectangleBorder(
@@ -412,6 +421,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
     bool addingButtonStatus = false;
     bool userProfileStatus = false;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: YandexMap(
           mapObjects: mapObjects,
           onMapCreated: (YandexMapController yandexMapController) async {
@@ -467,18 +477,35 @@ class _YandexMapTestState extends State<YandexMapTest> {
           }),
       floatingActionButton:
           Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-        FloatingActionButton(
-          child: Icon(Icons.person),
-          backgroundColor: Colors.black87,
-          onPressed: () {
-            userProfileStatus = true;
-          }
-        ),
-        SizedBox(
+        Container(
+          decoration: ShapeDecoration(
+            color: Colors.black45,
+              shape: CircleBorder(),
+            ),
+            child: IconButton(
+                icon: const Icon(Icons.person),
+                onPressed: () {
+                  if (true) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginScreen()));
+                  }
+                }),
+          ),
+
+        // FloatingActionButton(
+        //   child: Icon(Icons.person),
+        //   backgroundColor: Colors.black87,
+        //   onPressed: () {
+        //     userProfileStatus = true;
+        //   }
+        // ),
+        const SizedBox(
           height: 600,
         ),
         FloatingActionButton(
-          backgroundColor: Colors.black87,
+            backgroundColor: Colors.black87,
             onPressed: () {
               addingButtonStatus = true;
             },
