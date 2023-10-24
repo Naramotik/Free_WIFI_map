@@ -21,10 +21,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   late YandexMapController controller;
   final List<MapObject> mapObjects = [];
   MapObjectId mapObjectId = const MapObjectId('selPoint');
-  final animation =
-      const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
-  static const Point _startPoint =
-      Point(latitude: 56.129057, longitude: 40.406635);
+  final animation = const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
+  static const Point _startPoint = Point(latitude: 56.129057, longitude: 40.406635);
 
   // Логика для создания нового id для метки
   int counter = 1;
@@ -299,14 +297,14 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   // Всплывающее меню (само меню)
-  Column _buildBottomNavMenu(Point point) {
+  Column _buildBottomNavMenu(Point point, String mark) {
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 10, right: 10, left: 0),
           child: Column(
             children: [
-              const Row(
+              Row(
                 children: <Widget>[
                   Expanded(
                     child: ListTile(
@@ -317,7 +315,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     child: Column(
                       children: [
                         ListTile(
-                          title: Text('3.7', textAlign: TextAlign.right),
+                          title: Text(mark, textAlign: TextAlign.right),
                         ),
                       ],
                     ),
@@ -381,11 +379,13 @@ class _YandexMapTestState extends State<YandexMapTest> {
         ),
       ],
     );
-    setState(() {});
+    //setState(() {});
   }
 
   // Всплывающее меню (вызов меню)
   void _showToast(Point point) {
+    var arr = [1,2,3,4];
+    var mark = (arr.reduce((a,b)=>a+b)/arr.length).toString();
     showModalBottomSheet(
         context: context,
         shape: (const RoundedRectangleBorder(
@@ -396,7 +396,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
         builder: (context) {
           return Container(
             height: 300,
-            child: _buildBottomNavMenu(point),
+            child: _buildBottomNavMenu(point, mark),
           );
         });
   }
@@ -468,7 +468,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
       floatingActionButton:
           Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         FloatingActionButton(
-          child: Icon(Icons.delete),
+          child: Icon(Icons.person),
+          backgroundColor: Colors.black87,
           onPressed: () {
             userProfileStatus = true;
           }
@@ -477,6 +478,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
           height: 600,
         ),
         FloatingActionButton(
+          backgroundColor: Colors.black87,
             onPressed: () {
               addingButtonStatus = true;
             },
