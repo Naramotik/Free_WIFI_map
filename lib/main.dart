@@ -62,7 +62,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   void loaderTest() async {
     List jsonList;
 
-    var response = await Dio().get("http://192.168.1.15:8080/mark");
+    var response = await Dio().get("http://192.168.0.102:8080/mark");
     setState(() {
       jsonList = response.data as List;
       print(jsonList);
@@ -130,7 +130,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 onPressed: () async {
                   var dio = Dio();
                   var response = await dio
-                      .post("http://192.168.1.15:8080/comment", data: {
+                      .post("http://192.168.0.102:8080/comment", data: {
                     'comment': commentController.text,
                     'latitude': point.latitude.toString()
                   });
@@ -160,23 +160,29 @@ class _YandexMapTestState extends State<YandexMapTest> {
               SizedBox(height: 10),
               Row(
                 children: [
-                  Padding(padding: EdgeInsets.only(top: 20, right: 20)),
-                  TextButton(
-                    onPressed: () {
-                      addComment(point);
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
+                  Expanded(
+                    flex: 5,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 10, right: 200),
+                      child: TextButton(
+                        onPressed: () {
+                          addComment(point);
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                        ),
+                        child: const Text('Add comment',
+                            style: TextStyle(color: Colors.white)),
+                      ),
                     ),
-                    child: const Text('Add comment',
-                        style: TextStyle(color: Colors.white)),
                   ),
-                  Padding(
-                      padding: EdgeInsets.only(left: 160, top: 20, right: 0)),
-                  TextButton(
-                    onPressed: () => {Navigator.pop(context)},
-                    child: Icon(Icons.close),
-                  ),
+                  Expanded(
+                    flex: 1,
+                    child: TextButton(
+                      onPressed: () => {Navigator.pop(context)},
+                      child: Icon(Icons.close),
+                    ),
+                  )
                 ],
               ),
               Expanded(
@@ -243,7 +249,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   void _buildReviewMenu(Point point) async {
     String latitude = point.latitude.toString();
     var response =
-        await Dio().get("http://192.168.1.15:8080/comment/$latitude");
+        await Dio().get("http://192.168.0.102:8080/comment/$latitude");
     var jsonComments = response.data as List;
     if (jsonComments.isNotEmpty) {
       showReviewMenu(point, jsonComments);
@@ -280,7 +286,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     textAlign: TextAlign.center, textScaleFactor: 0.9),
                 onPressed: () async {
                   var response = await Dio()
-                      .post("http://192.168.1.15:8080/complain", data: {
+                      .post("http://192.168.0.102:8080/complain", data: {
                     'complain': complainController.text,
                     'latitude': point.latitude.toString()
                   });
@@ -337,15 +343,15 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 child: const Row(
                   children: <Widget>[
                     Expanded(
-                      child: ListTile(
-                        leading: Icon(Icons.comment),
-                        title: Text('Comments'),
-                      ),
-                    ),
+                        flex: 5,
+                        child: ListTile(
+                          leading: Icon(Icons.comment),
+                          title: Text('Comments'),
+                        )),
                     Expanded(
+                      flex: 1,
                       child: ListTile(
                         leading: Icon(Icons.arrow_forward_ios_rounded),
-                        contentPadding: EdgeInsets.only(left: 140),
                       ),
                     ),
                   ],
@@ -356,16 +362,16 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 child: const Row(
                   children: <Widget>[
                     Expanded(
+                      flex: 5,
                       child: ListTile(
                         leading: Icon(Icons.error_outline),
                         title: Text('Complain'),
                       ),
                     ),
                     Expanded(
+                      flex: 1,
                       child: ListTile(
-                        leading: Icon(Icons.arrow_forward_ios_rounded),
-                        contentPadding: EdgeInsets.only(left: 140),
-                      ),
+                          leading: Icon(Icons.arrow_forward_ios_rounded)),
                     ),
                   ],
                 ),
@@ -446,7 +452,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     _showToast(newPoint);
                   });
 
-              var response = await Dio().post("http://192.168.1.15:8080/mark",
+              var response = await Dio().post("http://192.168.0.102:8080/mark",
                   data: {
                     'latitude': selectedPoint.latitude,
                     'longitude': selectedPoint.longitude
