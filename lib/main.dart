@@ -410,6 +410,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   @override
   Widget build(BuildContext context) {
     bool addingButtonStatus = false;
+    bool userProfileStatus = false;
     return Scaffold(
       body: YandexMap(
           mapObjects: mapObjects,
@@ -464,12 +465,23 @@ class _YandexMapTestState extends State<YandexMapTest> {
               });
             }
           }),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton:
+          Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+        FloatingActionButton(
+          child: Icon(Icons.delete),
           onPressed: () {
-            addingButtonStatus = true;
-          },
-          child: const Text('ADD MARK',
-              textAlign: TextAlign.center, textScaleFactor: 0.8)),
+            userProfileStatus = true;
+          }
+        ),
+        SizedBox(
+          height: 600,
+        ),
+        FloatingActionButton(
+            onPressed: () {
+              addingButtonStatus = true;
+            },
+            child: const Icon(Icons.place)),
+      ]),
     );
   }
 }
