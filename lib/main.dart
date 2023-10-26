@@ -33,6 +33,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
 
+
+  String baseUrl = '192.168.0.102';
   // Логика для создания нового id для метки
   int counter = 1;
   void counterPlus() {
@@ -69,7 +71,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   void loaderTest() async {
     List jsonList;
 
-    var response = await Dio().get("http://192.168.0.102:8080/mark");
+    var response = await Dio().get("http://$baseUrl:8080/mark");
     setState(() {
       jsonList = response.data as List;
       print(jsonList);
@@ -137,7 +139,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 onPressed: () async {
                   var dio = Dio();
                   var response = await dio
-                      .post("http://192.168.0.102:8080/comment", data: {
+                      .post("http://$baseUrl:8080/comment", data: {
                     'comment': commentController.text,
                     'latitude': point.latitude.toString()
                   });
@@ -256,7 +258,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   void _buildReviewMenu(Point point) async {
     String latitude = point.latitude.toString();
     var response =
-        await Dio().get("http://192.168.0.102:8080/comment/$latitude");
+        await Dio().get("http://$baseUrl:8080/comment/$latitude");
     var jsonComments = response.data as List;
     if (jsonComments.isNotEmpty) {
       showReviewMenu(point, jsonComments);
@@ -293,7 +295,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     textAlign: TextAlign.center, textScaleFactor: 0.9),
                 onPressed: () async {
                   var response = await Dio()
-                      .post("http://192.168.0.102:8080/complain", data: {
+                      .post("http://$baseUrl:8080/complain", data: {
                     'complain': complainController.text,
                     'latitude': point.latitude.toString()
                   });
@@ -462,8 +464,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     print('Tapped me at $newPoint');
                     _showToast(newPoint);
                   });
-
-              var response = await Dio().post("http://192.168.0.102:8080/mark",
+              var response = await Dio().post('http://$baseUrl:8080/mark',
                   data: {
                     'latitude': selectedPoint.latitude,
                     'longitude': selectedPoint.longitude
