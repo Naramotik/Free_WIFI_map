@@ -1,4 +1,4 @@
-package com.example.govno_karta;
+package com.example.free_wifi_map;
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity;

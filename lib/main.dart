@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui';
-
+import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
@@ -40,6 +40,22 @@ class _YandexMapTestState extends State<YandexMapTest> {
   void counterPlus() {
     counter++;
   }
+
+  Position? _currentLocation;
+    late bool servisePermisson = false;
+    late LocationPermission permission;
+
+    String _currentAddress = "";
+
+    Future<Position> _getCurrentLocation() async {
+      servisePermisson = await Geolocator.isLocationServiceEnabled();
+      if(!servisePermisson){
+        permission == Geolocator.checkPermission();
+      }
+      
+      return await Geolocator.getCurrentPosition();
+    }
+
 
   // Рисовалка кружков
   Future<Uint8List> _rawPlacemarkImage() async {
@@ -417,7 +433,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
     super.initState();
     loaderTest();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     bool addingButtonStatus = false;
@@ -500,6 +516,31 @@ class _YandexMapTestState extends State<YandexMapTest> {
         Spacer(flex: 5,),
         Expanded(
           flex: 1,
+          child: FloatingActionButton(
+            backgroundColor: Colors.black87,
+            onPressed: 
+            () async {
+              _currentLocation = await _getCurrentLocation();
+            //   setState(() {
+            //   // Перемещение камеры на заданный startPoint
+            //   // при запуске приложения
+            //   controller = yandexMapController;
+            //   controller.moveCamera(
+            //     CameraUpdate.newCameraPosition(
+            //       const CameraPosition(
+            //         target: _startPoint,
+            //         zoom: 10,
+            //       ),
+            //     ),
+            //     animation: animation,
+            //   );
+            // });
+              print("${_currentLocation}");
+              CameraPosition(target: Point(latitude: _currentLocation!.latitude, longitude: _currentLocation!.longitude));
+            },
+            child: const Icon(Icons.gps_fixed)),),
+        Expanded(
+          flex: 0,
           child: FloatingActionButton(
             backgroundColor: Colors.black87,
             onPressed: () {
