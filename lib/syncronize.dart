@@ -6,6 +6,7 @@ import 'databasehelper.dart';
 import 'contactinfomodel.dart';
 
 class SyncronizationData {
+  String baseUrl = '192.168.0.102';
   static Future<bool> isInternet() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
@@ -60,7 +61,7 @@ class SyncronizationData {
       };
       var dio = Dio();
       final response = await dio.post(
-          'http://192.168.0.1:8080/mark',
+          'http://$baseUrl:8080/mark',
           data: data);
       if (response.statusCode == 200) {
         print("Saving Data ");
@@ -94,7 +95,7 @@ class SyncronizationData {
       };
       var dio = Dio();
       final response = await dio.post(
-          'http://192.168.0.1:8080/mark',
+          'http://$baseUrl:8080/mark',
           data: data);
       if (response.statusCode == 200) {
         print("Saving Data ");
