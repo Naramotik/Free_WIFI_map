@@ -33,7 +33,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
 
-
   String baseUrl = '192.168.0.102';
   // Логика для создания нового id для метки
   int counter = 1;
@@ -42,20 +41,19 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   Position? _currentLocation;
-    late bool servisePermisson = false;
-    late LocationPermission permission;
+  late bool servisePermisson = false;
+  late LocationPermission permission;
 
-    String _currentAddress = "";
+  String _currentAddress = "";
 
-    Future<Position> _getCurrentLocation() async {
-      servisePermisson = await Geolocator.isLocationServiceEnabled();
-      if(!servisePermisson){
-        permission == Geolocator.checkPermission();
-      }
-      
-      return await Geolocator.getCurrentPosition();
+  Future<Position> _getCurrentLocation() async {
+    servisePermisson = await Geolocator.isLocationServiceEnabled();
+    if (!servisePermisson) {
+      permission == Geolocator.checkPermission();
     }
 
+    return await Geolocator.getCurrentPosition();
+  }
 
   // Рисовалка кружков
   Future<Uint8List> _rawPlacemarkImage() async {
@@ -154,11 +152,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     textAlign: TextAlign.center, textScaleFactor: 0.9),
                 onPressed: () async {
                   var dio = Dio();
-                  var response = await dio
-                      .post("http://$baseUrl:8080/comment", data: {
-                    'comment': commentController.text,
-                    'latitude': point.latitude.toString()
-                  });
+                  var response = await dio.post("http://$baseUrl:8080/comment",
+                      data: {
+                        'comment': commentController.text,
+                        'latitude': point.latitude.toString()
+                      });
                   Navigator.popUntil(
                     context,
                     ModalRoute.withName('/'),
@@ -273,8 +271,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   // Всплывающее меню комментариев (Запрос к бд)
   void _buildReviewMenu(Point point) async {
     String latitude = point.latitude.toString();
-    var response =
-        await Dio().get("http://$baseUrl:8080/comment/$latitude");
+    var response = await Dio().get("http://$baseUrl:8080/comment/$latitude");
     var jsonComments = response.data as List;
     if (jsonComments.isNotEmpty) {
       showReviewMenu(point, jsonComments);
@@ -433,7 +430,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
     super.initState();
     loaderTest();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     bool addingButtonStatus = false;
@@ -465,8 +462,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
               // Создание метки при нажатии на карту + Вывод информации о метке
               print('Tapped map at $selectedPoint'); // для проверки
-              final placemark = 
-              PlacemarkMapObject(
+              final placemark = PlacemarkMapObject(
                   mapId: mapObjectId,
                   point: selectedPoint,
                   opacity: 200,
@@ -497,56 +493,58 @@ class _YandexMapTestState extends State<YandexMapTest> {
         Expanded(
           flex: 2,
           child: Container(
-          decoration: const ShapeDecoration(
-            color: Colors.black45,
-            shape: CircleBorder(),
+            decoration: const ShapeDecoration(
+              color: Colors.black45,
+              shape: CircleBorder(),
+            ),
+            child: IconButton(
+                icon: const Icon(Icons.person),
+                onPressed: () {
+                  if (true) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginScreen()));
+                  }
+                }),
           ),
-          child: IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () {
-                if (true) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginScreen()));
-                }
-              }),
         ),
+        Spacer(
+          flex: 5,
         ),
-        Spacer(flex: 5,),
         Expanded(
           flex: 1,
           child: FloatingActionButton(
-            backgroundColor: Colors.black87,
-            onPressed: 
-            () async {
-              _currentLocation = await _getCurrentLocation();
-            //   setState(() {
-            //   // Перемещение камеры на заданный startPoint
-            //   // при запуске приложения
-            //   controller = yandexMapController;
-            //   controller.moveCamera(
-            //     CameraUpdate.newCameraPosition(
-            //       const CameraPosition(
-            //         target: _startPoint,
-            //         zoom: 10,
-            //       ),
-            //     ),
-            //     animation: animation,
-            //   );
-            // });
-              print("${_currentLocation}");
-              CameraPosition(target: Point(latitude: _currentLocation!.latitude, longitude: _currentLocation!.longitude));
-            },
-            child: const Icon(Icons.gps_fixed)),),
+              backgroundColor: Colors.black87,
+              onPressed: () async {
+                _currentLocation = await _getCurrentLocation();
+                setState(() {
+                  // Перемещение камеры на заданный startPoint
+                  // при запуске приложения
+                  controller.moveCamera(
+                    CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                          target: Point(
+                              latitude: _currentLocation!.latitude,
+                              longitude: _currentLocation!.longitude),
+                          zoom: 20),
+                    ),
+                    animation: animation,
+                  );
+                });
+                print("${_currentLocation}");
+              },
+              child: const Icon(Icons.gps_fixed)),
+        ),
         Expanded(
           flex: 0,
           child: FloatingActionButton(
-            backgroundColor: Colors.black87,
-            onPressed: () {
-              addingButtonStatus = true;
-            },
-            child: const Icon(Icons.place)),)
+              backgroundColor: Colors.black87,
+              onPressed: () {
+                addingButtonStatus = true;
+              },
+              child: const Icon(Icons.place)),
+        )
       ]),
     );
   }
