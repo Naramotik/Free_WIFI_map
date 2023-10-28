@@ -35,33 +35,37 @@ class Controller {
     }
   }
 
-  Future<int?> addData(Mark mark)async{
+  Future<int?> addData(Mark mark) async {
     var dbclient = await conn.db;
     int? result;
     try {
-      result = await dbclient!.insert(SqfliteDatabaseHelper.markTable, mark.toJson());
+      result = await dbclient!
+          .insert(SqfliteDatabaseHelper.markTable, mark.toJson());
     } catch (e) {
       print(e.toString());
     }
     return result;
   }
 
-  Future<int?> updateData(Mark mark)async{
+  Future<int?> updateData(Mark mark) async {
     var dbclient = await conn.db;
     int? result;
     try {
-      result = await dbclient!.update(SqfliteDatabaseHelper.markTable, mark.toJson(),where: 'id=?',whereArgs: [mark.id]);
+      result = await dbclient!.update(
+          SqfliteDatabaseHelper.markTable, mark.toJson(),
+          where: 'id=?', whereArgs: [mark.id]);
     } catch (e) {
       print(e.toString());
     }
     return result;
   }
 
-  Future fetchData()async{
+  Future fetchData() async {
     var dbclient = await conn.db;
     List userList = [];
     try {
-      List<Map<String,dynamic>> maps = await dbclient!.query(SqfliteDatabaseHelper.markTable,orderBy: 'id DESC');
+      List<Map<String, dynamic>> maps = await dbclient!
+          .query(SqfliteDatabaseHelper.markTable, orderBy: 'id DESC');
       for (var item in maps) {
         userList.add(item);
       }

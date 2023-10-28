@@ -14,15 +14,18 @@ import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'loginscreen.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await SqfliteDatabaseHelper.instance.db;
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: EasyLoading.init(),
       routes: {
-      '/': (context) => YandexMapTest(),
-      '/login': (context) => LoginScreen()
-    }, initialRoute: '/',),
+        '/': (context) => YandexMapTest(),
+        '/login': (context) => LoginScreen()
+      },
+      initialRoute: '/',
+    ),
   );
 }
 
@@ -40,7 +43,7 @@ void configLoading() {
     ..maskColor = Colors.blue.withOpacity(0.5)
     ..userInteractions = true
     ..dismissOnTap = false;
-    //..customAnimation = CustomAnimation();
+  //..customAnimation = CustomAnimation();
 }
 
 class YandexMapTest extends StatefulWidget {
@@ -70,8 +73,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
   Position? _currentLocation;
   late bool servisePermisson = false;
   late LocationPermission permission;
-
-  String _currentAddress = "";
 
   Future<Position> _getCurrentLocation() async {
     servisePermisson = await Geolocator.isLocationServiceEnabled();
@@ -111,8 +112,12 @@ class _YandexMapTestState extends State<YandexMapTest> {
   // Добавление меток с бд
   void loaderTest() async {
     List jsonList;
-
-    var response = await Dio().get("http://$baseUrl:8080/mark");
+    var response;
+    try {
+      response = await Dio().get("http://$baseUrl:8080/mark");
+    } catch (e) {
+      print(e.toString());
+    }
     setState(() {
       jsonList = response.data as List;
       print(jsonList);
@@ -298,7 +303,10 @@ class _YandexMapTestState extends State<YandexMapTest> {
   // Всплывающее меню комментариев (Запрос к бд)
   void _buildReviewMenu(Point point) async {
     String latitude = point.latitude.toString();
-    var response = await Dio().get("http://$baseUrl:8080/comment/$latitude");
+    var response;
+    try {
+      response = await Dio().get("http://$baseUrl:8080/comment/$latitude");
+    } catch (e) {}
     var jsonComments = response.data as List;
     if (jsonComments.isNotEmpty) {
       showReviewMenu(point, jsonComments);
@@ -455,9 +463,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
   Timer? _timer;
   List? list;
   bool loading = true;
-  Future userList()async{
+  Future userList() async {
     list = await Controller().fetchData();
-    setState(() {loading=false;});
+    setState(() {
+      loading = false;
+    });
     //print(list);
   }
 
@@ -475,26 +485,24 @@ class _YandexMapTestState extends State<YandexMapTest> {
     });
   }
 
-  Future syncToMysql()async{
-      await SyncronizationData().fetchAllInfo().then((userList)async{
-        EasyLoading.show(status: 'Dont close app. we are sync...');
-        await SyncronizationData().saveToMysqlWith(userList);
-        EasyLoading.showSuccess('Successfully save to mysql');
-      });
-  }
-
-  Future isInteret()async{
-    await SyncronizationData.isInternet().then((connection){
-      if (connection) {
-        
-        print("Internet connection abailale");
-      }else{
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet")));
-      }
+  Future syncToMysql() async {
+    await SyncronizationData().fetchAllInfo().then((userList) async {
+      EasyLoading.show(status: 'Dont close app. we are sync...');
+      await SyncronizationData().saveToMysqlWith(userList);
+      EasyLoading.showSuccess('Successfully save to mysql');
     });
   }
 
-
+  Future isInteret() async {
+    await SyncronizationData.isInternet().then((connection) {
+      if (connection) {
+        print("Internet connection abailale");
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("No Internet")));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -540,16 +548,18 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     Point newPoint = self.point;
                     print('Tapped me at $newPoint');
                     _showToast(newPoint);
-                    Mark contactinfoModel = Mark(id: 1, latitude: 123, longitude: 123);
-                await Controller().addData(contactinfoModel).then((value){
-                  if (value! > 0) {
-                    print("Success");
-                    userList();
-                  }else{
-                    print("faild");
-                  }
-                  
-                });
+                    Mark mark = Mark(
+                        id: 1,
+                        latitude: newPoint.latitude,
+                        longitude: newPoint.longitude);
+                    await Controller().addData(mark).then((value) {
+                      if (value! > 0) {
+                        print("Success");
+                        userList();
+                      } else {
+                        print("Fail");
+                      }
+                    });
                   });
               var response = await Dio().post('http://$baseUrl:8080/mark',
                   data: {
@@ -584,16 +594,19 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 }),
           ),
         ),
-        IconButton(icon: Icon(Icons.refresh_sharp), onPressed: ()async{
-            await SyncronizationData.isInternet().then((connection){
-              if (connection) {
-                syncToMysql();
-                print("Internet connection abailale");
-              }else{
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet")));
-              }
-            });
-          }),
+        IconButton(
+            icon: Icon(Icons.refresh_sharp),
+            onPressed: () async {
+              await SyncronizationData.isInternet().then((connection) {
+                if (connection) {
+                  syncToMysql();
+                  print("Internet connection abailale");
+                } else {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("No Internet")));
+                }
+              });
+            }),
         Spacer(
           flex: 5,
         ),

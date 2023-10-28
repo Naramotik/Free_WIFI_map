@@ -40,8 +40,7 @@ class SyncronizationData {
     final dbClient = await conn.db;
     List<Mark> contactList = [];
     try {
-      final maps =
-          await dbClient!.query(SqfliteDatabaseHelper.markTable);
+      final maps = await dbClient!.query(SqfliteDatabaseHelper.markTable);
       for (var item in maps) {
         contactList.add(Mark.fromJson(item));
       }
@@ -57,12 +56,9 @@ class SyncronizationData {
         "id": contactList[i].id,
         "latitude": contactList[i].latitude,
         "longitude": contactList[i].longitude,
-
       };
       var dio = Dio();
-      final response = await dio.post(
-          'http://$baseUrl:8080/mark',
-          data: data);
+      final response = await dio.post('http://$baseUrl:8080/mark', data: data);
       if (response.statusCode == 200) {
         print("Saving Data ");
       } else {
@@ -75,8 +71,7 @@ class SyncronizationData {
     final dbClient = await conn.db;
     List contactList = [];
     try {
-      final maps =
-          await dbClient!.query(SqfliteDatabaseHelper.markTable);
+      final maps = await dbClient!.query(SqfliteDatabaseHelper.markTable);
       for (var item in maps) {
         contactList.add(item);
       }
@@ -94,9 +89,7 @@ class SyncronizationData {
         "longitude": contactList[i]['longitude'],
       };
       var dio = Dio();
-      final response = await dio.post(
-          'http://$baseUrl:8080/mark',
-          data: data);
+      final response = await dio.post('http://$baseUrl:8080/mark', data: data);
       if (response.statusCode == 200) {
         print("Saving Data ");
       } else {
