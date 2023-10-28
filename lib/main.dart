@@ -1,5 +1,11 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:free_wifi_map/contactinfomodel.dart';
+import 'package:free_wifi_map/controller.dart';
+import 'package:free_wifi_map/databasehelper.dart';
+import 'package:free_wifi_map/syncronize.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +13,34 @@ import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import 'loginscreen.dart';
 
-void main() {
+void main() async {
+  await SqfliteDatabaseHelper.instance.db;
   runApp(
-    MaterialApp(routes: {
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      builder: EasyLoading.init(),
+      routes: {
       '/': (context) => YandexMapTest(),
       '/login': (context) => LoginScreen()
-    }, initialRoute: '/'),
+    }, initialRoute: '/',),
   );
+}
+
+void configLoading() {
+  EasyLoading.instance
+    ..displayDuration = const Duration(milliseconds: 2000)
+    ..indicatorType = EasyLoadingIndicatorType.fadingCircle
+    ..loadingStyle = EasyLoadingStyle.dark
+    ..indicatorSize = 45.0
+    ..radius = 10.0
+    ..progressColor = Colors.yellow
+    ..backgroundColor = Colors.green
+    ..indicatorColor = Colors.yellow
+    ..textColor = Colors.yellow
+    ..maskColor = Colors.blue.withOpacity(0.5)
+    ..userInteractions = true
+    ..dismissOnTap = false;
+    //..customAnimation = CustomAnimation();
 }
 
 class YandexMapTest extends StatefulWidget {
@@ -425,11 +452,49 @@ class _YandexMapTestState extends State<YandexMapTest> {
         });
   }
 
+  Timer? _timer;
+  List? list;
+  bool loading = true;
+  Future userList()async{
+    list = await Controller().fetchData();
+    setState(() {loading=false;});
+    //print(list);
+  }
+
   @override
   initState() {
     super.initState();
     loaderTest();
+    userList();
+    isInteret();
+    EasyLoading.addStatusCallback((status) {
+      print('EasyLoading Status $status');
+      if (status == EasyLoadingStatus.dismiss) {
+        _timer?.cancel();
+      }
+    });
   }
+
+  Future syncToMysql()async{
+      await SyncronizationData().fetchAllInfo().then((userList)async{
+        EasyLoading.show(status: 'Dont close app. we are sync...');
+        await SyncronizationData().saveToMysqlWith(userList);
+        EasyLoading.showSuccess('Successfully save to mysql');
+      });
+  }
+
+  Future isInteret()async{
+    await SyncronizationData.isInternet().then((connection){
+      if (connection) {
+        
+        print("Internet connection abailale");
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet")));
+      }
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -471,10 +536,20 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         image: BitmapDescriptor.fromBytes(
                             await _rawPlacemarkImage())),
                   ),
-                  onTap: (PlacemarkMapObject self, Point point) {
+                  onTap: (PlacemarkMapObject self, Point point) async {
                     Point newPoint = self.point;
                     print('Tapped me at $newPoint');
                     _showToast(newPoint);
+                    Mark contactinfoModel = Mark(id: 1, latitude: 123, longitude: 123);
+                await Controller().addData(contactinfoModel).then((value){
+                  if (value! > 0) {
+                    print("Success");
+                    userList();
+                  }else{
+                    print("faild");
+                  }
+                  
+                });
                   });
               var response = await Dio().post('http://$baseUrl:8080/mark',
                   data: {
@@ -509,6 +584,16 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 }),
           ),
         ),
+        IconButton(icon: Icon(Icons.refresh_sharp), onPressed: ()async{
+            await SyncronizationData.isInternet().then((connection){
+              if (connection) {
+                syncToMysql();
+                print("Internet connection abailale");
+              }else{
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet")));
+              }
+            });
+          }),
         Spacer(
           flex: 5,
         ),
@@ -532,7 +617,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     animation: animation,
                   );
                 });
-                print("${_currentLocation}");
               },
               child: const Icon(Icons.gps_fixed)),
         ),
