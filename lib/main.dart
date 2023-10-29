@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:free_wifi_map/mark.dart';
-import 'package:free_wifi_map/controller.dart';
-import 'package:free_wifi_map/databasehelper.dart';
-import 'package:free_wifi_map/syncronize.dart';
+import 'package:free_wifi_map/syncronize/mark.dart';
+import 'package:free_wifi_map/syncronize/controller.dart';
+import 'package:free_wifi_map/syncronize/databasehelper.dart';
+import 'package:free_wifi_map/syncronize/syncronize.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
