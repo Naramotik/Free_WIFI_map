@@ -58,11 +58,15 @@ class SyncronizationData {
         "longitude": contactList[i].longitude,
       };
       var dio = Dio();
-      final response = await dio.post('http://$baseUrl:8080/mark', data: data);
+      try {
+        final response = await dio.post('http://$baseUrl:8080/mark', data: data);
       if (response.statusCode == 200) {
         print("Saving Data ");
       } else {
         print(response.statusCode);
+      }
+      } on DioException catch (e) {
+        print(e.message);
       }
     }
   }
@@ -89,11 +93,15 @@ class SyncronizationData {
         "longitude": contactList[i]['longitude'],
       };
       var dio = Dio();
-      final response = await dio.post('http://$baseUrl:8080/mark', data: data);
+      try {
+        final response = await dio.post('http://$baseUrl:8080/mark', data: data);
       if (response.statusCode == 200) {
         print("Saving Data ");
       } else {
         print(response.statusCode);
+      }
+      } on DioException catch (e) {
+        print(e.message);
       }
     }
   }
