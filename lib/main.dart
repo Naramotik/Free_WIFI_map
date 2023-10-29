@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:free_wifi_map/contactinfomodel.dart';
+import 'package:free_wifi_map/mark.dart';
 import 'package:free_wifi_map/controller.dart';
 import 'package:free_wifi_map/databasehelper.dart';
 import 'package:free_wifi_map/syncronize.dart';
@@ -115,8 +116,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
     var response;
     try {
       response = await Dio().get("http://$baseUrl:8080/mark");
-    } catch (e) {
-      print(e.toString());
+    } on DioException catch (_) {
+      print(_.message);
     }
     setState(() {
       jsonList = response.data as List;
@@ -306,7 +307,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
     var response;
     try {
       response = await Dio().get("http://$baseUrl:8080/comment/$latitude");
-    } catch (e) {}
+    } on DioException catch (_) {
+      print(_.message);
+    }
     var jsonComments = response.data as List;
     if (jsonComments.isNotEmpty) {
       showReviewMenu(point, jsonComments);
@@ -549,7 +552,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     print('Tapped me at $newPoint');
                     _showToast(newPoint);
                     Mark mark = Mark(
-                        id: 1,
+                        id: null,
                         latitude: newPoint.latitude,
                         longitude: newPoint.longitude);
                     await Controller().addData(mark).then((value) {
@@ -602,8 +605,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   syncToMysql();
                   print("Internet connection abailale");
                 } else {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text("No Internet")));
+                  ScaffoldMessenger
+                  .of(context)
+                  .showSnackBar(SnackBar(content: Text("No Internet")));
                 }
               });
             }),

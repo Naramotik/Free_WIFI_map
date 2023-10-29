@@ -9,7 +9,7 @@ Mark markFromJson(String str) => Mark.fromJson(json.decode(str));
 String markToJson(Mark data) => json.encode(data.toJson());
 
 class Mark {
-    int id;
+    int? id;
     double latitude;
     double longitude;
 

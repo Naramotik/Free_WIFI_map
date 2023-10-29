@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:free_wifi_map/contactinfomodel.dart';
+import 'package:free_wifi_map/mark.dart';
 
 import 'databasehelper.dart';
 

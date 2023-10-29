@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'databasehelper.dart';
-import 'contactinfomodel.dart';
+import 'mark.dart';
 
 class SyncronizationData {
   String baseUrl = '192.168.0.102';
