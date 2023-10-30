@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -190,6 +189,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         'comment': commentController.text,
                         'latitude': point.latitude.toString()
                       });
+                      print(response);
                   Navigator.popUntil(
                     context,
                     ModalRoute.withName('/'),
@@ -350,6 +350,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     'complain': complainController.text,
                     'latitude': point.latitude.toString()
                   });
+                  print(response);
                   Navigator.pop(context);
                 },
               )
@@ -569,7 +570,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     'latitude': selectedPoint.latitude,
                     'longitude': selectedPoint.longitude
                   });
-
+              print(response);
               // Добавление метки на карту (в массив меток)
               setState(() {
                 mapObjects.add(placemark);
