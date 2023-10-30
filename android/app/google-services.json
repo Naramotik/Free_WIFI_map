@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "457780317775",
+    "project_id": "free-wifi-map-54eb7",
+    "storage_bucket": "free-wifi-map-54eb7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:457780317775:android:664a910fb9e345821c243a",
+        "android_client_info": {
+          "package_name": "com.example.free_wifi_map"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEJxnDqi2BDBsNBEGuYIEychDw5C1mCUU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
