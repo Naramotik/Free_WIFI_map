@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:free_wifi_map/mark.dart';
+import 'package:free_wifi_map/syncronize/mark.dart';
 
 import 'databasehelper.dart';
 
