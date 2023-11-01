@@ -102,11 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              TextButton(
-                onPressed: () =>
-                    Navigator.of(context).pushNamed('/reset_password'),
-                child: const Text('Сбросить пароль'),
-              ),
             ],
           ),
         ),

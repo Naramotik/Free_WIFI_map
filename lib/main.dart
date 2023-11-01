@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:free_wifi_map/firebase/account_screen.dart';
@@ -28,11 +29,11 @@ Future<void> main() async {
       routes: {
         '/': (context) => const YandexMapTest(),
         '/login': (context) => const LoginScreen(),
-        '/signup':(context) => const SignUpScreen(),
-        '/account':(context) => const AccountScreen(),
-        '/home':(context) => const FirebaseStream()
+        '/signup': (context) => const SignUpScreen(),
+        '/account': (context) => const AccountScreen(),
+        '/home': (context) => const FirebaseStream()
       },
-      initialRoute: '/',
+      initialRoute: '/home',
     ),
   );
 }
@@ -197,7 +198,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         'comment': commentController.text,
                         'latitude': point.latitude.toString()
                       });
-                      print(response);
+                  print(response);
                   Navigator.popUntil(
                     context,
                     ModalRoute.withName('/'),
@@ -518,6 +519,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     bool addingButtonStatus = false;
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -595,15 +597,26 @@ class _YandexMapTestState extends State<YandexMapTest> {
               shape: CircleBorder(),
             ),
             child: IconButton(
-                icon: const Icon(Icons.person),
-                onPressed: () {
-                  if (true) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()));
-                  }
-                }),
+              onPressed: () {
+                if ((user == null)) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AccountScreen()),
+                  );
+                }
+              },
+              icon: Icon(
+                Icons.person,
+                color: (user == null) ? Colors.white : Colors.yellow,
+              ),
+            ),
           ),
         ),
         IconButton(
@@ -614,13 +627,12 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   syncToMysql();
                   print("Internet connection abailale");
                 } else {
-                  ScaffoldMessenger
-                  .of(context)
-                  .showSnackBar(SnackBar(content: Text("No Internet")));
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("No Internet")));
                 }
               });
             }),
-        Spacer(
+        const Spacer(
           flex: 5,
         ),
         Expanded(
