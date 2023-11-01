@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:free_wifi_map/mark.dart';
 import 'package:free_wifi_map/controller.dart';
@@ -13,9 +14,10 @@ import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import 'loginscreen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SqfliteDatabaseHelper.instance.db;
+  await Firebase.initializeApp();
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
