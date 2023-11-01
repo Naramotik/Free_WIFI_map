@@ -33,8 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
-    
-
     navigator.pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
   }
 
@@ -56,9 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 autocorrect: false,
                 controller: emailTextInputController,
                 validator: (email) =>
-                    email != null
-                        ? 'Введите правильный Email'
-                        : null,
+                    email != null ? 'Введите правильный Email' : null,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Введите Email',

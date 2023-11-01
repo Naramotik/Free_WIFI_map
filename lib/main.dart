@@ -7,6 +7,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:free_wifi_map/firebase/account_screen.dart';
 import 'package:free_wifi_map/firebase/services/firebase_stream.dart';
 import 'package:free_wifi_map/firebase/signup_screen.dart';
+import 'package:free_wifi_map/firebase_options.dart';
 import 'package:free_wifi_map/syncronize/mark.dart';
 import 'package:free_wifi_map/syncronize/controller.dart';
 import 'package:free_wifi_map/syncronize/databasehelper.dart';
@@ -21,7 +22,7 @@ import 'firebase/login_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SqfliteDatabaseHelper.instance.db;
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
