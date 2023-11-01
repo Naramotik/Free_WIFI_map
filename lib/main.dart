@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:free_wifi_map/firebase/account_screen.dart';
+import 'package:free_wifi_map/firebase/services/firebase_stream.dart';
+import 'package:free_wifi_map/firebase/signup_screen.dart';
 import 'package:free_wifi_map/syncronize/mark.dart';
 import 'package:free_wifi_map/syncronize/controller.dart';
 import 'package:free_wifi_map/syncronize/databasehelper.dart';
@@ -23,8 +26,11 @@ Future<void> main() async {
       debugShowCheckedModeBanner: false,
       builder: EasyLoading.init(),
       routes: {
-        '/': (context) => YandexMapTest(),
-        '/login': (context) => LoginScreen()
+        '/': (context) => const YandexMapTest(),
+        '/login': (context) => const LoginScreen(),
+        '/signup':(context) => const SignUpScreen(),
+        '/account':(context) => const AccountScreen(),
+        '/home':(context) => const FirebaseStream()
       },
       initialRoute: '/',
     ),
