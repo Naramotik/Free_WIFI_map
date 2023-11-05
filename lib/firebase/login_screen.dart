@@ -1,4 +1,7 @@
+import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:free_wifi_map/firebase/services/snack_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +36,30 @@ class _LoginScreenState extends State<LoginScreen> {
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
-    
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailTextInputController.text.trim(),
+        password: passwordTextInputController.text.trim(),
+      );
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+
+      if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+        SnackBarService.showSnackBar(
+          context,
+          'Неправильный email или пароль. Повторите попытку',
+          true,
+        );
+        return;
+      } else {
+        SnackBarService.showSnackBar(
+          context,
+          'Неизвестная ошибка! Попробуйте еще раз или обратитесь в поддержку.',
+          true,
+        );
+        return;
+      }
+    }
 
     navigator.pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
   }
@@ -56,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 autocorrect: false,
                 controller: emailTextInputController,
                 validator: (email) =>
-                    email != null
+                    email != null && !EmailValidator.validate(email)
                         ? 'Введите правильный Email'
                         : null,
                 decoration: const InputDecoration(
