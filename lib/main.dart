@@ -639,6 +639,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
         Expanded(
           flex: 1,
           child: FloatingActionButton(
+              heroTag: "location",
               backgroundColor: Colors.black87,
               onPressed: () async {
                 _currentLocation = await _getCurrentLocation();
@@ -662,6 +663,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
         Expanded(
           flex: 0,
           child: FloatingActionButton(
+              heroTag: "place",
               backgroundColor: Colors.black87,
               onPressed: () {
                 addingButtonStatus = true;
