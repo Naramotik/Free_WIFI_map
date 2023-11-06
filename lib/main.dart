@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,7 +23,9 @@ import 'firebase/login_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SqfliteDatabaseHelper.instance.db;
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -73,7 +76,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
 
-  String baseUrl = '192.168.0.102';
+  String baseUrl = '192.168.0.109';
   // Логика для создания нового id для метки
   int counter = 1;
   void counterPlus() {
@@ -124,9 +127,13 @@ class _YandexMapTestState extends State<YandexMapTest> {
     List jsonList;
     var response;
     try {
-      response = await Dio().get("http://$baseUrl:8080/mark");
-    } on DioException catch (_) {
-      print(_.message);
+      response = await Dio().get("http://$baseUrl:8080/mark",
+          options: Options(
+            sendTimeout: const Duration(minutes: 1),
+            receiveTimeout: const Duration(minutes: 1),
+          ));
+    } on SocketException catch (e) {
+      print(e.message);
     }
     setState(() {
       jsonList = response.data as List;
