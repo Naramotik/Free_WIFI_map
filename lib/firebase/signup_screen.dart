@@ -12,14 +12,15 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreen extends State<SignUpScreen> {
   bool isHiddenPassword = true;
+  TextEditingController nameTextInputController = TextEditingController();
   TextEditingController emailTextInputController = TextEditingController();
   TextEditingController passwordTextInputController = TextEditingController();
-  TextEditingController passwordTextRepeatInputController =
-      TextEditingController();
+  TextEditingController passwordTextRepeatInputController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
+    nameTextInputController.dispose();
     emailTextInputController.dispose();
     passwordTextInputController.dispose();
     passwordTextRepeatInputController.dispose();
@@ -54,7 +55,7 @@ class _SignUpScreen extends State<SignUpScreen> {
         email: emailTextInputController.text.trim(),
         password: passwordTextInputController.text.trim(),
       );
-      await userCredential.user?.updateDisplayName('moma');
+      await userCredential.user?.updateDisplayName(nameTextInputController.text.trim());
     } on FirebaseAuthException catch (e) {
       print(e.code);
 
