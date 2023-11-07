@@ -8,6 +8,11 @@ class AccountScreen extends StatefulWidget {
   State<AccountScreen> createState() => _AccountScreenState();
 }
 
+Future<void> updateDisplayedName(user, name)async {
+  user!.updateDisplayName(name);
+  return;
+}
+
 class _AccountScreenState extends State<AccountScreen> {
   final user = FirebaseAuth.instance.currentUser;
 
@@ -46,6 +51,7 @@ class _AccountScreenState extends State<AccountScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Ваш Email: ${user?.email}'),
+            TextButton(onPressed: () => updateDisplayedName(user, 'moma'), child: const Text('Обновить имя')),
             TextButton(
               onPressed: () => signOut(),
               child: const Text('Выйти'),

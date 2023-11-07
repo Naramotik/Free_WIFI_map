@@ -50,10 +50,11 @@ class _SignUpScreen extends State<SignUpScreen> {
     }
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailTextInputController.text.trim(),
         password: passwordTextInputController.text.trim(),
       );
+      await userCredential.user?.updateDisplayName('moma');
     } on FirebaseAuthException catch (e) {
       print(e.code);
 

@@ -66,6 +66,7 @@ class YandexMapTest extends StatefulWidget {
 }
 
 class _YandexMapTestState extends State<YandexMapTest> {
+  var user = FirebaseAuth.instance.currentUser;
   final commentController = TextEditingController();
   final complainController = TextEditingController();
   late YandexMapController controller;
@@ -376,6 +377,23 @@ class _YandexMapTestState extends State<YandexMapTest> {
         });
   }
 
+  String getName(){
+    var name;
+    if (user != null) {
+    for (final providerProfile in user!.providerData) {
+        // ID of the provider (google.com, apple.com, etc.)
+        final provider = providerProfile.providerId;
+
+        // UID specific to the provider
+        final uid = providerProfile.uid;
+
+        // Name, email address, and profile photo URL
+        name = providerProfile.displayName;
+    }
+}
+return name.toString();
+  }
+
   // Всплывающее меню (само меню)
   Column _buildBottomNavMenu(Point point, String mark) {
     return Column(
@@ -402,7 +420,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   ),
                 ],
               ),
-              const Row(
+              Row(
                 children: <Widget>[
                   Expanded(
                     child: ListTile(
@@ -412,7 +430,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   ),
                   Expanded(
                     child: ListTile(
-                        title: Text('Beltok', textAlign: TextAlign.right)),
+                        title: Text("${user?.displayName}", textAlign: TextAlign.right)),
                   ),
                 ],
               ),
