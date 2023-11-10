@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.demo.dto;
 
+import com.example.demo.model.Mark;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ComplainToPost {
-    String complain;
-    String latitude;
+public class MarkToPost {
+    Mark mark;
+    String email;
 }

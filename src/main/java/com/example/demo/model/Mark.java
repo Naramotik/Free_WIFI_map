@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -28,4 +28,10 @@ public class Mark {
     @JsonIgnore
     @OneToMany(mappedBy = "mark")
     private List<Complain> complains;
+    @JsonIgnore
+    @OneToMany(mappedBy = "mark")
+    private List<Grade> grades;
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    Client client;
 }

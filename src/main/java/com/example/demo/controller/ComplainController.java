@@ -1,5 +1,7 @@
-package com.example.demo;
+package com.example.demo.controller;
 
+import com.example.demo.dto.ComplainToPost;
+import com.example.demo.service.ComplainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,16 +15,12 @@ import java.util.Optional;
 @RequestMapping("/complain")
 public class ComplainController {
     @Autowired
-    ComplainRepository complainRepository;
-    @Autowired
-    MarkRepository markRepository;
+    ComplainService complainService;
 
     @PostMapping
-    public HttpStatus createComplain(@RequestBody ComplainToPost complainToPost){
+    public HttpStatus save(@RequestBody ComplainToPost complainToPost){
         System.out.println(complainToPost);
-        Optional<Mark> mark = markRepository.findByLatitude(complainToPost.latitude);
-        Complain complain  = new Complain(null, complainToPost.getComplain(), mark.get());
-        complainRepository.save(complain);
+        complainService.save(complainToPost);
         return HttpStatus.CREATED;
     }
 }

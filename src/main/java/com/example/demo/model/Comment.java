@@ -1,11 +1,9 @@
-package com.example.demo;
+package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Data
@@ -23,4 +21,7 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "mark_longitude")
     Mark mark;
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    Client client;
 }

@@ -1,5 +1,11 @@
-package com.example.demo;
+package com.example.demo.controller;
 
+import com.example.demo.repository.CommentRepository;
+import com.example.demo.dto.CommentToPost;
+import com.example.demo.repository.MarkRepository;
+import com.example.demo.model.Comment;
+import com.example.demo.model.Mark;
+import com.example.demo.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,22 +19,16 @@ import java.util.Optional;
 @RequestMapping("/comment")
 public class CommentController {
     @Autowired
-    CommentRepository commentRepository;
-    @Autowired
-    MarkRepository markRepository;
+    CommentService commentService;
 
     @PostMapping
     public HttpStatus createComment(@RequestBody CommentToPost commentToPost){
         System.out.println(commentToPost);
-        Optional<Mark> mark = markRepository.findByLatitude(commentToPost.latitude);
-        Comment comment = new Comment(null, commentToPost.getComment(), mark.get());
-        commentRepository.save(comment);
+        commentService.save(commentToPost);
         return HttpStatus.CREATED;
     }
     @GetMapping("/{latitude}")
     public ResponseEntity<List<Comment>> getComments(@PathVariable("latitude") String latitude){
-        System.out.println(latitude);
-        Optional<Mark> mark = markRepository.findByLatitude(latitude);
-        return new ResponseEntity<List<Comment>> (commentRepository.findByMark(mark.get()), HttpStatus.OK);
+        return new ResponseEntity<List<Comment>> (commentService.findComments(latitude), HttpStatus.OK);
     }
 }
