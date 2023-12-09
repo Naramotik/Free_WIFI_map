@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -136,9 +135,13 @@ class _YandexMapTestState extends State<YandexMapTest> {
           options: Options(
             sendTimeout: const Duration(minutes: 1),
             receiveTimeout: const Duration(minutes: 1),
+            receiveDataWhenStatusError: true
           ));
-    } on SocketException catch (e) {
-      print(e.message);
+    } on DioException catch (e) {
+      if(e.type == DioExceptionType.connectionTimeout){
+        throw Exception("Connection  Timeout Exception");
+      }
+      throw Exception(e.message);
     }
     setState(() {
       jsonList = response.data as List;
@@ -590,15 +593,20 @@ class _YandexMapTestState extends State<YandexMapTest> {
                       }
                     });
                   });
-              var response =
-                  await Dio().post('http://$baseUrl:8080/mark', data: {
-                "mark": {
-                  'latitude': selectedPoint.latitude,
-                  'longitude': selectedPoint.longitude
-                },
-                "email": user!.displayName.toString()
-              });
-              print(response);
+              try{
+                var response =
+                await Dio().post('http://$baseUrl:8080/mark', data: {
+                  "mark": {
+                    'latitude': selectedPoint.latitude,
+                    'longitude': selectedPoint.longitude
+                  },
+                  "email": user!.displayName.toString()
+                });
+                print(response);
+              } on DioException catch(e){
+                print(e.message);
+              }
+
               // Добавление метки на карту (в массив меток)
               setState(() {
                 mapObjects.add(placemark);
