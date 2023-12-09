@@ -75,9 +75,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
   final List<MapObject> mapObjects = [];
   MapObjectId mapObjectId = const MapObjectId('selPoint');
   final animation =
-  const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
+      const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
   static const Point _startPoint =
-  Point(latitude: 56.129057, longitude: 40.406635);
+      Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
   String baseUrl = '192.168.0.109';
 
@@ -155,14 +155,14 @@ class _YandexMapTestState extends State<YandexMapTest> {
             mapId: mapObjectId,
             point: Point(
                 latitude:
-                double.parse(jsonList[jsonList.indexOf(item)]['latitude']),
+                    double.parse(jsonList[jsonList.indexOf(item)]['latitude']),
                 longitude: double.parse(
                     jsonList[jsonList.indexOf(item)]['longitude'])),
             opacity: 200,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
                   image:
-                  BitmapDescriptor.fromBytes(await _rawPlacemarkImage())),
+                      BitmapDescriptor.fromBytes(await _rawPlacemarkImage())),
             ),
             onTap: (PlacemarkMapObject self, Point point) {
               Point newPoint = self.point;
@@ -184,9 +184,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
         context: context,
         shape: (const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ))),
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ))),
         builder: (context) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -229,9 +229,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
         context: context,
         shape: (const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ))),
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ))),
         builder: (context) {
           return Column(
             children: [
@@ -346,9 +346,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
         context: context,
         shape: (const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ))),
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ))),
         builder: (context) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -476,9 +476,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
         context: context,
         shape: (const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ))),
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ))),
         builder: (context) {
           return Container(
             height: 300,
@@ -517,7 +517,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
     await SyncronizationData().fetchAllInfo().then((userList) async {
       EasyLoading.show(status: 'Dont close app. we are sync...');
       await SyncronizationData().saveToMysqlWith(userList);
-      EasyLoading.showSuccess('Successfully save to mysql');
+      EasyLoading.showSuccess('Successfully save to database');
     });
   }
 
@@ -537,163 +537,162 @@ class _YandexMapTestState extends State<YandexMapTest> {
     final user = FirebaseAuth.instance.currentUser;
     bool addingButtonStatus = false;
     return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: YandexMap(
-        mapObjects: mapObjects,
-        onMapCreated: (YandexMapController yandexMapController)
-    async {
-      setState(() {
-        // Перемещение камеры на заданный startPoint
-        // при запуске приложения
-        controller = yandexMapController;
-        controller.moveCamera(
-          CameraUpdate.newCameraPosition(
-            const CameraPosition(
-              target: _startPoint,
-              zoom: 10,
+      resizeToAvoidBottomInset: false,
+      body: YandexMap(
+          mapObjects: mapObjects,
+          onMapCreated: (YandexMapController yandexMapController) async {
+            setState(() {
+              // Перемещение камеры на заданный startPoint
+              // при запуске приложения
+              controller = yandexMapController;
+              controller.moveCamera(
+                CameraUpdate.newCameraPosition(
+                  const CameraPosition(
+                    target: _startPoint,
+                    zoom: 10,
+                  ),
+                ),
+                animation: animation,
+              );
+            });
+          },
+          onMapTap: (Point selectedPoint) async {
+            if (addingButtonStatus == true) {
+              // Задание нового id для метки
+              counterPlus();
+              mapObjectId = MapObjectId("$mapObjectId + $counter");
+
+              // Создание метки при нажатии на карту + Вывод информации о метке
+              print('Tapped map at $selectedPoint'); // для проверки
+              final placemark = PlacemarkMapObject(
+                  mapId: mapObjectId,
+                  point: selectedPoint,
+                  opacity: 200,
+                  icon: PlacemarkIcon.single(
+                    PlacemarkIconStyle(
+                        image: BitmapDescriptor.fromBytes(
+                            await _rawPlacemarkImage())),
+                  ),
+                  onTap: (PlacemarkMapObject self, Point point) async {
+                    Point newPoint = self.point;
+                    print('Tapped me at $newPoint');
+                    _showToast(newPoint);
+                    Mark mark = Mark(
+                        id: null,
+                        latitude: newPoint.latitude,
+                        longitude: newPoint.longitude);
+                    await Controller().addData(mark).then((value) {
+                      if (value! > 0) {
+                        print("Success");
+                        userList();
+                      } else {
+                        print("Fail");
+                      }
+                    });
+                  });
+              var response =
+                  await Dio().post('http://$baseUrl:8080/mark', data: {
+                "mark": {
+                  'latitude': selectedPoint.latitude,
+                  'longitude': selectedPoint.longitude
+                },
+                "email": user!.displayName.toString()
+              });
+              print(response);
+              // Добавление метки на карту (в массив меток)
+              setState(() {
+                mapObjects.add(placemark);
+              });
+            }
+          }),
+      floatingActionButton:
+          Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+        Expanded(
+          flex: 2,
+          child: Container(
+            decoration: const ShapeDecoration(
+              color: Colors.black45,
+              shape: CircleBorder(),
+            ),
+            child: IconButton(
+              onPressed: () {
+                if ((user == null)) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AccountScreen()),
+                  );
+                }
+              },
+              icon: Icon(
+                Icons.person,
+                color: (user == null) ? Colors.white : Colors.yellow,
+              ),
             ),
           ),
-          animation: animation,
-        );
-      });
-    },
-    onMapTap: (Point selectedPoint) async {
-    if (addingButtonStatus == true) {
-    // Задание нового id для метки
-    counterPlus();
-    mapObjectId = MapObjectId("$mapObjectId + $counter");
-
-    // Создание метки при нажатии на карту + Вывод информации о метке
-    print('Tapped map at $selectedPoint'); // для проверки
-    final placemark = PlacemarkMapObject(
-    mapId: mapObjectId,
-    point: selectedPoint,
-    opacity: 200,
-    icon: PlacemarkIcon.single(
-    PlacemarkIconStyle(
-    image: BitmapDescriptor.fromBytes(
-    await _rawPlacemarkImage())),
-    ),
-    onTap: (PlacemarkMapObject self, Point point) async {
-    Point newPoint = self.point;
-    print('Tapped me at $newPoint');
-    _showToast(newPoint);
-    Mark mark = Mark(
-    id: null,
-    latitude: newPoint.latitude,
-    longitude: newPoint.longitude);
-    await Controller().addData(mark).then((value) {
-    if (value! > 0) {
-    print("Success");
-    userList();
-    } else {
-    print("Fail");
-    }
-    });
-    });
-    var response = await Dio().post('http://$baseUrl:8080/mark',
-    data: {
-    "mark":{
-    'latitude': selectedPoint.latitude,
-    'longitude': selectedPoint.longitude
-    },
-    "email": user!.displayName.toString()
-    });
-    print(response);
-    // Добавление метки на карту (в массив меток)
-    setState(() {
-    mapObjects.add(placemark);
-    });
-    }
-    }),
-    floatingActionButton:
-    Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-    Expanded(
-    flex: 2,
-    child: Container(
-    decoration: const ShapeDecoration(
-    color: Colors.black45,
-    shape: CircleBorder(),
-    ),
-    child: IconButton(
-    onPressed: () {
-    if ((user == null)) {
-    Navigator.push(
-    context,
-    MaterialPageRoute(
-    builder: (context) => const LoginScreen()),
+        ),
+        // IconButton(
+        // icon: Icon(Icons.refresh_sharp),
+        // onPressed: () async {
+        // await SyncronizationData.isInternet().then((connection) {
+        // if (connection) {
+        // syncToMysql();
+        // print("Internet connection abailale");
+        // } else {
+        // ScaffoldMessenger.of(context)
+        //     .showSnackBar(SnackBar(content: Text("No Internet")));
+        // }
+        // });
+        // }),
+        const Spacer(
+          flex: 5,
+        ),
+        Expanded(
+          flex: 1,
+          child: FloatingActionButton(
+              heroTag: "location",
+              backgroundColor: Colors.black87,
+              onPressed: () async {
+                final status = await permissionLocation.request();
+                if (status == PermissionStatus.granted) {
+                  _currentLocation = await _getCurrentLocation();
+                  setState(() {
+                    // Перемещение камеры на заданный startPoint
+                    // при запуске приложения
+                    controller.moveCamera(
+                      CameraUpdate.newCameraPosition(
+                        CameraPosition(
+                            target: Point(
+                                latitude: _currentLocation!.latitude,
+                                longitude: _currentLocation!.longitude),
+                            zoom: 20),
+                      ),
+                      animation: animation,
+                    );
+                  });
+                } else {
+                  print('Location permission denied.');
+                }
+              },
+              child: const Icon(Icons.gps_fixed)),
+        ),
+        Expanded(
+          flex: 0,
+          child: FloatingActionButton(
+              heroTag: "place",
+              backgroundColor: Colors.black87,
+              onPressed: () {
+                addingButtonStatus = true;
+              },
+              child: const Icon(Icons.place)),
+        )
+      ]),
     );
-    } else {
-    Navigator.push(
-    context,
-    MaterialPageRoute(
-    builder: (context) => const AccountScreen()),
-    );
-    }
-    },
-    icon: Icon(
-    Icons.person,
-    color: (user == null) ? Colors.white : Colors.yellow,
-    ),
-    ),
-    ),
-    ),
-    IconButton(
-    icon: Icon(Icons.refresh_sharp),
-    onPressed: () async {
-    await SyncronizationData.isInternet().then((connection) {
-    if (connection) {
-    syncToMysql();
-    print("Internet connection abailale");
-    } else {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("No Internet")));
-    }
-    });
-    }),
-    const Spacer(
-    flex: 5,
-    ),
-    Expanded(
-    flex: 1,
-    child: FloatingActionButton(
-    heroTag: "location",
-    backgroundColor: Colors.black87,
-    onPressed: () async {
-    final status = await permissionLocation.request();
-    if (status == PermissionStatus.granted) {
-      _currentLocation = await _getCurrentLocation();
-      setState(() {
-        // Перемещение камеры на заданный startPoint
-        // при запуске приложения
-        controller.moveCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-                target: Point(
-                    latitude: _currentLocation!.latitude,
-                    longitude: _currentLocation!.longitude),
-                zoom: 20),
-          ),
-          animation: animation,
-        );
-      });
-    } else {
-      print('Location permission denied.');
-    }
-    },
-    child: const Icon(Icons.gps_fixed)),
-    ),
-    Expanded(
-    flex: 0,
-    child: FloatingActionButton(
-    heroTag: "place",
-    backgroundColor: Colors.black87,
-    onPressed: () {
-    addingButtonStatus = true;
-    },
-    child: const Icon(Icons.place)),
-    )
-    ]),
-    );
-    }
   }
+}
