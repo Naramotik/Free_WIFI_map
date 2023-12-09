@@ -92,6 +92,18 @@ class _SignUpScreen extends State<SignUpScreen> {
           child: Column(
             children: [
               TextFormField(
+                keyboardType: TextInputType.name,
+                autocorrect: false,
+                controller: nameTextInputController,
+                validator: (value) => value != null && value.length < 4
+                    ? 'Минимум 4 символа'
+                    : null,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Введите Отображаемое имя',
+                ),
+              ),
+              TextFormField(
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
                 controller: emailTextInputController,
