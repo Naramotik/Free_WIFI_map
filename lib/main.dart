@@ -80,12 +80,13 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.1.7';
+  String baseUrl = '192.168.1.15';
 
   // Логика для создания нового id для метки
   int counter = 1;
   double rating = 0;
   bool isVisible = false;
+  bool isLoading = true;
   void counterPlus() {
     counter++;
   }
@@ -383,10 +384,14 @@ class _YandexMapTestState extends State<YandexMapTest> {
     } on DioException catch (_) {
       print(_.message);
     }
-    if (response) {
-      isVisible = true;
+    if (response.data) {
+      setState(() {
+        isVisible = true;
+        isLoading = false;
+      });
+
     }
-    print(response.toString());
+    print(isVisible);
   }
 
   // Всплывающее меню (само меню)
@@ -532,6 +537,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
           topRight: Radius.circular(10),
         ))),
         builder: (context) {
+          if (isLoading == true) return Text("dfdf");
+          else
           return Container(
             height: 300,
             child: _buildBottomNavMenu(point, mark),
