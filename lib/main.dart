@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:free_wifi_map/firebase/account_screen.dart';
 import 'package:free_wifi_map/firebase/services/firebase_stream.dart';
 import 'package:free_wifi_map/firebase/signup_screen.dart';
@@ -78,27 +80,17 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.0.109';
+  String baseUrl = '192.168.1.7';
 
   // Логика для создания нового id для метки
   int counter = 1;
-
+  double rating = 0;
+  bool isVisible = false;
   void counterPlus() {
     counter++;
   }
 
   Position? _currentLocation;
-  late bool servisePermisson = false;
-  late LocationPermission permission;
-
-  Future<Position> _getCurrentLocation() async {
-    servisePermisson = await Geolocator.isLocationServiceEnabled();
-    if (!servisePermisson) {
-      permission == Geolocator.checkPermission();
-    }
-
-    return await Geolocator.getCurrentPosition();
-  }
 
   // Рисовалка кружков
   Future<Uint8List> _rawPlacemarkImage() async {
@@ -133,12 +125,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
     try {
       response = await Dio().get("http://$baseUrl:8080/mark",
           options: Options(
-            sendTimeout: const Duration(minutes: 1),
-            receiveTimeout: const Duration(minutes: 1),
-            receiveDataWhenStatusError: true
-          ));
+              sendTimeout: const Duration(minutes: 1),
+              receiveTimeout: const Duration(minutes: 1),
+              receiveDataWhenStatusError: true));
     } on DioException catch (e) {
-      if(e.type == DioExceptionType.connectionTimeout){
+      if (e.type == DioExceptionType.connectionTimeout) {
         throw Exception("Connection  Timeout Exception");
       }
       throw Exception(e.message);
@@ -170,6 +161,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
             onTap: (PlacemarkMapObject self, Point point) {
               Point newPoint = self.point;
               print('Tapped me at $newPoint');
+              _getVisible(newPoint.longitude, user?.email);
               _showToast(newPoint);
             });
         // Обновление айдишника на новый
@@ -384,88 +376,144 @@ class _YandexMapTestState extends State<YandexMapTest> {
         });
   }
 
+  void _getVisible(double longitude, String? email) async {
+    var response;
+    try {
+      response = await Dio().get("http://$baseUrl:8080/grade/$longitude/$email");
+    } on DioException catch (_) {
+      print(_.message);
+    }
+    if (response) {
+      isVisible = true;
+    }
+  }
+
   // Всплывающее меню (само меню)
   Column _buildBottomNavMenu(Point point, String mark) {
+    double rating = 0;
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 10, right: 10, left: 0),
-          child: Column(
-            children: [
-              Row(
-                children: <Widget>[
-                  const Expanded(
-                    child: ListTile(
-                        leading: Icon(Icons.star_border_sharp),
-                        title: Text('Rating')),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: Text(mark, textAlign: TextAlign.right),
-                        ),
-                      ],
-                    ),
+        Row(
+          children: <Widget>[
+            const Expanded(
+              child: ListTile(
+                  leading: Icon(Icons.star_border_sharp),
+                  title: Text('Rating')),
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Text(mark, textAlign: TextAlign.right),
                   ),
                 ],
               ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: ListTile(
-                      leading: Icon(Icons.people_alt_outlined),
-                      title: Text('Added by'),
+            ),
+          ],
+        ),
+        Visibility(
+          visible: isVisible,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black12)),
+                    width: 200,
+                    alignment: Alignment.center,
+                    child: RatingBar.builder(
+                      minRating: 1,
+                      maxRating: 5,
+                      itemSize: 25,
+                      itemBuilder: (context, _) => const Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                      ),
+                      updateOnDrag: true,
+                      onRatingUpdate: (rating) => setState(() {
+                        this.rating = rating;
+                      }),
                     ),
                   ),
-                  Expanded(
-                    child: ListTile(
-                        title: Text("${user?.displayName}",
-                            textAlign: TextAlign.right)),
-                  ),
-                ],
+                ),
+                Expanded(
+                  flex: 5,
+                  child: Container(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                            isVisible = !isVisible;
+                            //         var response =
+                //     await Dio().post('http://$baseUrl:8080/mark', data: {
+                //   "mark": {
+                //     'latitude': selectedPoint.latitude,
+                //     'longitude': selectedPoint.longitude
+                //   },
+                //   "email": user!.displayName.toString()
+                // });
+                            print(isVisible);
+                          });
+                        },
+                        child: const Text('send'),
+                      )),
+                ),
+              ]),
+        ),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: ListTile(
+                leading: Icon(Icons.people_alt_outlined),
+                title: Text('Added by'),
               ),
-              InkWell(
-                onTap: () => {_buildReviewMenu(point)},
-                child: const Row(
-                  children: <Widget>[
-                    Expanded(
-                        flex: 5,
-                        child: ListTile(
-                          leading: Icon(Icons.comment),
-                          title: Text('Comments'),
-                        )),
-                    Expanded(
-                      flex: 1,
-                      child: ListTile(
-                        leading: Icon(Icons.arrow_forward_ios_rounded),
-                      ),
-                    ),
-                  ],
+            ),
+            Expanded(
+              child: ListTile(
+                  title:
+                      Text("${user?.displayName}", textAlign: TextAlign.right)),
+            ),
+          ],
+        ),
+        InkWell(
+          onTap: () => {_buildReviewMenu(point)},
+          child: const Row(
+            children: <Widget>[
+              Expanded(
+                  flex: 5,
+                  child: ListTile(
+                    leading: Icon(Icons.comment),
+                    title: Text('Comments'),
+                  )),
+              Expanded(
+                flex: 1,
+                child: ListTile(
+                  leading: Icon(Icons.arrow_forward_ios_rounded),
                 ),
               ),
-              InkWell(
-                onTap: () => {_buildComplain(point)}, // Пожаловаться
-                child: const Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: 5,
-                      child: ListTile(
-                        leading: Icon(Icons.error_outline),
-                        title: Text('Complain'),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: ListTile(
-                          leading: Icon(Icons.arrow_forward_ios_rounded)),
-                    ),
-                  ],
-                ),
-              )
             ],
           ),
         ),
+        InkWell(
+          onTap: () => {_buildComplain(point)}, // Пожаловаться
+          child: const Row(
+            children: <Widget>[
+              Expanded(
+                flex: 5,
+                child: ListTile(
+                  leading: Icon(Icons.error_outline),
+                  title: Text('Complain'),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: ListTile(leading: Icon(Icons.arrow_forward_ios_rounded)),
+              ),
+            ],
+          ),
+        )
       ],
     );
     //setState(() {});
@@ -487,7 +535,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
             height: 300,
             child: _buildBottomNavMenu(point, mark),
           );
-        });
+        }).whenComplete(() {
+  isVisible = false;
+});;
   }
 
   Timer? _timer;
@@ -593,9 +643,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
                       }
                     });
                   });
-              try{
+              try {
                 var response =
-                await Dio().post('http://$baseUrl:8080/mark', data: {
+                    await Dio().post('http://$baseUrl:8080/mark', data: {
                   "mark": {
                     'latitude': selectedPoint.latitude,
                     'longitude': selectedPoint.longitude
@@ -603,7 +653,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   "email": user!.displayName.toString()
                 });
                 print(response);
-              } on DioException catch(e){
+              } on DioException catch (e) {
                 print(e.message);
               }
 
@@ -669,10 +719,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
               onPressed: () async {
                 final status = await permissionLocation.request();
                 if (status == PermissionStatus.granted) {
-                  _currentLocation = await _getCurrentLocation();
+                  _currentLocation = await Geolocator.getCurrentPosition();
                   setState(() {
-                    // Перемещение камеры на заданный startPoint
-                    // при запуске приложения
+                    // Перемещение камеры на заданный startPoint при запуске приложения
                     controller.moveCamera(
                       CameraUpdate.newCameraPosition(
                         CameraPosition(
