@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.GradeToPost;
 import com.example.demo.model.Grade;
-import com.example.demo.model.Mark;
 import com.example.demo.service.GradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,5 +24,15 @@ public class GradeController {
     @GetMapping("/{latitude}")
     public ResponseEntity<List<Grade>> getGradesFromMark(@PathVariable String latitude){
         return new ResponseEntity<List<Grade>> (gradeService.findGrades(latitude), HttpStatus.OK);
+    }
+    @GetMapping("/{latitude}/avg")
+    public String getAvgGrade(@PathVariable String latitude) {
+        return gradeService.findAvgGrade(latitude);
+    }
+
+    @GetMapping("/{longitude}/{user_email}")
+    public boolean isGradeExist(@PathVariable("longitude") String longitude,
+                                @PathVariable("user_email") String user_email){
+        return gradeService.isGradeExist(longitude, user_email);
     }
 }

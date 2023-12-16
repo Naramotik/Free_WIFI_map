@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface MarkRepository extends JpaRepository<Mark, Long> {
 
     Optional<Mark> findByLatitude(String latitude);
+
+    Optional<Mark> findByLongitude(String longitude);
 }

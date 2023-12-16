@@ -32,4 +32,32 @@ public class GradeService {
         Optional<Mark> mark = markRepository.findByLatitude(latitude);
         return gradeRepository.findByMark(mark.get());
     }
+
+    public String findAvgGrade(String latitude) {
+        Optional<Mark> mark = markRepository.findByLatitude(latitude);
+        double avg = 0;
+        if (mark.isPresent()){
+           List <Grade> grades = gradeRepository.findByMark(mark.get());
+            for (Grade grade: grades) {
+                avg += grade.getScore();
+            }
+            avg = avg / grades.size();
+        }
+        return String.valueOf(avg);
+    }
+
+
+    public boolean isGradeExist(String longitude, String email){
+        Mark mark = markRepository.findByLongitude(longitude).get();
+        Client client = clientService.findClientByEmail(email);
+        List<Grade> grades = gradeRepository.findByClient(client);
+        boolean visible = true;
+        for(Grade grade: grades){
+            if (grade.getMark().equals(mark)) {
+                visible = false;
+                break;
+            }
+        }
+        return visible;
+    }
 }
