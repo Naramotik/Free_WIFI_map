@@ -386,6 +386,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
     if (response) {
       isVisible = true;
     }
+    print(response.toString());
   }
 
   // Всплывающее меню (само меню)
@@ -585,6 +586,14 @@ class _YandexMapTestState extends State<YandexMapTest> {
     });
   }
 
+  bool isLogin(){
+    if ((user == null)) {
+                  return false;
+                } else {
+                  return true;
+                }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -739,7 +748,10 @@ class _YandexMapTestState extends State<YandexMapTest> {
               },
               child: const Icon(Icons.gps_fixed)),
         ),
-        Expanded(
+        Visibility(
+          visible: isLogin(),
+          replacement: const SizedBox(height: 0, width: 0,),
+          child: Expanded(
           flex: 0,
           child: FloatingActionButton(
               heroTag: "place",
@@ -748,7 +760,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 addingButtonStatus = true;
               },
               child: const Icon(Icons.place)),
-        )
+        ),),
       ]),
     );
   }
