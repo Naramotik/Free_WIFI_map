@@ -17,7 +17,7 @@ Future<void> updateDisplayedName(user, name)async {
 class _AccountScreenState extends State<AccountScreen> {
   final user = FirebaseAuth.instance.currentUser;
   final displayNameController = TextEditingController();
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.109';
   @override
   void initState() {
     super.initState();
@@ -112,10 +112,6 @@ class _AccountScreenState extends State<AccountScreen> {
       );
   }
 
-
-
-
-
   getData() async{
     var response = await Dio().get("http://$baseUrl:8080/client/${FirebaseAuth.instance.currentUser?.email}");
     setState(() {
@@ -128,10 +124,9 @@ class _AccountScreenState extends State<AccountScreen> {
     });
   }
 
-
   sendInfo() {
     var displayName = displayNameController.text;
-    Dio().put("http://192.168.1.15:8080/client/change-name/$displayName/${FirebaseAuth.instance.currentUser?.email}");
+    Dio().put("http://$baseUrl:8080/client/change-name/$displayName/${FirebaseAuth.instance.currentUser?.email}");
   }
 
 }

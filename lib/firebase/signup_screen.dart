@@ -18,7 +18,7 @@ class _SignUpScreen extends State<SignUpScreen> {
   TextEditingController passwordTextInputController = TextEditingController();
   TextEditingController passwordTextRepeatInputController = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.109';
   @override
   void dispose() {
     nameTextInputController.dispose();

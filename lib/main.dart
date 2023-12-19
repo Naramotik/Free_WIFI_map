@@ -80,13 +80,14 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.109';
 
   // Логика для создания нового id для метки
   int counter = 1;
   double rating = 0;
-  bool isVisible = false;
+  bool isVisible = true;
   bool isLoading = false;
+
   void counterPlus() {
     counter++;
   }
@@ -162,8 +163,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
             onTap: (PlacemarkMapObject self, Point point) {
               Point newPoint = self.point;
               print('Tapped me at $newPoint');
-              _getVisible(newPoint.longitude, user?.email);
-              _showToast(newPoint);
+              //_getVisible(newPoint.longitude, jsonList[jsonList.indexOf(item)]['client']['displayName']);
+              _showToast(newPoint,
+                  jsonList[jsonList.indexOf(item)]['client']['displayName']);
             });
         // Обновление айдишника на новый
         setState(() {
@@ -380,7 +382,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   void _getVisible(double longitude, String? email) async {
     var response;
     try {
-      response = await Dio().get("http://$baseUrl:8080/grade/$longitude/$email");
+      response =
+          await Dio().get("http://$baseUrl:8080/grade/$longitude/$email");
     } on DioException catch (_) {
       print(_.message);
     }
@@ -389,14 +392,13 @@ class _YandexMapTestState extends State<YandexMapTest> {
         isVisible = true;
         isLoading = false;
       });
-
     }
     print(isVisible);
   }
 
   // Всплывающее меню (само меню)
-  Column _buildBottomNavMenu(Point point, String mark) {
-    double rating = 0;
+  Column _buildBottomNavMenu(Point point, String grade, String displayname) {
+    double rating_glob = 0;
     return Column(
       children: [
         Row(
@@ -410,7 +412,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text(mark, textAlign: TextAlign.right),
+                    title: Text(grade, textAlign: TextAlign.right),
                   ),
                 ],
               ),
@@ -439,7 +441,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                       ),
                       updateOnDrag: true,
                       onRatingUpdate: (rating) => setState(() {
-                        this.rating = rating;
+                        rating_glob = this.rating;
                       }),
                     ),
                   ),
@@ -452,15 +454,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         onPressed: () {
                           setState(() {
                             isVisible = !isVisible;
-                            //         var response =
-                //     await Dio().post('http://$baseUrl:8080/mark', data: {
-                //   "mark": {
-                //     'latitude': selectedPoint.latitude,
-                //     'longitude': selectedPoint.longitude
-                //   },
-                //   "email": user!.displayName.toString()
-                // });
-                            print(isVisible);
+                            Dio().post('http://$baseUrl:8080/grade', data: {
+                              'grade': rating,
+                              'latitude': point.latitude,
+                              "email": user!.email.toString()
+                            });
                           });
                         },
                         child: const Text('send'),
@@ -478,8 +476,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
             ),
             Expanded(
               child: ListTile(
-                  title:
-                      Text("${user?.displayName}", textAlign: TextAlign.right)),
+                  title: Text(displayname, textAlign: TextAlign.right)),
             ),
           ],
         ),
@@ -526,9 +523,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   // Всплывающее меню (вызов меню)
-  void _showToast(Point point) {
-    var arr = [1, 2, 3, 4];
-    var mark = (arr.reduce((a, b) => a + b) / arr.length).toString();
+  Future<void> _showToast(Point point, String? displayname) async {
+    var grade =
+        await Dio().get("http://$baseUrl:8080/grade/${point.latitude}/avg");
     showModalBottomSheet(
         context: context,
         shape: (const RoundedRectangleBorder(
@@ -537,15 +534,18 @@ class _YandexMapTestState extends State<YandexMapTest> {
           topRight: Radius.circular(10),
         ))),
         builder: (context) {
-          if (isLoading == true) return Text("dfdf");
+          if (isLoading == true)
+            return Text("dfdf");
           else
-          return Container(
-            height: 300,
-            child: _buildBottomNavMenu(point, mark),
-          );
+            return Container(
+              height: 300,
+              child: _buildBottomNavMenu(
+                  point, grade.data.toString(), displayname!),
+            );
         }).whenComplete(() {
-  isVisible = false;
-});;
+      isVisible = true;
+    });
+    ;
   }
 
   Timer? _timer;
@@ -593,12 +593,12 @@ class _YandexMapTestState extends State<YandexMapTest> {
     });
   }
 
-  bool isLogin(){
+  bool isLogin() {
     if ((user == null)) {
-                  return false;
-                } else {
-                  return true;
-                }
+      return false;
+    } else {
+      return true;
+    }
   }
 
   @override
@@ -645,7 +645,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   onTap: (PlacemarkMapObject self, Point point) async {
                     Point newPoint = self.point;
                     print('Tapped me at $newPoint');
-                    _showToast(newPoint);
+                    _showToast(newPoint, user!.displayName);
                     Mark mark = Mark(
                         id: null,
                         latitude: newPoint.latitude,
@@ -666,7 +666,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     'latitude': selectedPoint.latitude,
                     'longitude': selectedPoint.longitude
                   },
-                  "email": user!.displayName.toString()
+                  "email": user!.email.toString()
                 });
                 print(response);
               } on DioException catch (e) {
@@ -757,17 +757,21 @@ class _YandexMapTestState extends State<YandexMapTest> {
         ),
         Visibility(
           visible: isLogin(),
-          replacement: const SizedBox(height: 0, width: 0,),
+          replacement: const SizedBox(
+            height: 0,
+            width: 0,
+          ),
           child: Expanded(
-          flex: 0,
-          child: FloatingActionButton(
-              heroTag: "place",
-              backgroundColor: Colors.black87,
-              onPressed: () {
-                addingButtonStatus = true;
-              },
-              child: const Icon(Icons.place)),
-        ),),
+            flex: 0,
+            child: FloatingActionButton(
+                heroTag: "place",
+                backgroundColor: Colors.black87,
+                onPressed: () {
+                  addingButtonStatus = true;
+                },
+                child: const Icon(Icons.place)),
+          ),
+        ),
       ]),
     );
   }
