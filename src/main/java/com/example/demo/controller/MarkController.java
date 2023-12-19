@@ -32,5 +32,6 @@ public class MarkController {
         return new ResponseEntity<List<Mark>> (markService.findAll(), HttpStatus.OK);
     }
 
+
 }
 

@@ -13,4 +13,16 @@ public class ClientService {
     public Client findClientByEmail(String email){
         return clientRepository.findByEmail(email);
     }
+
+    public Client save(Client client){
+        client.setDisplayName(client.getEmail());
+        client.setRole("USER");
+        return clientRepository.save(client);
+    }
+
+    public Client changeName(String name, String email){
+        Client client = clientRepository.findByEmail(email);
+        client.setDisplayName(name);
+        return clientRepository.save(client);
+    }
 }

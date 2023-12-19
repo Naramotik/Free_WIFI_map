@@ -31,6 +31,9 @@ public class Client {
     @OneToMany(mappedBy = "client")
     private List<Grade> grades;
 
+    @Column(name = "role")
+    String role;
+
     @JsonIgnore
     @OneToMany(mappedBy = "client")
     private List<Complain> complains;
