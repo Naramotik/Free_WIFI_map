@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class _SignUpScreen extends State<SignUpScreen> {
   TextEditingController passwordTextInputController = TextEditingController();
   TextEditingController passwordTextRepeatInputController = TextEditingController();
   final formKey = GlobalKey<FormState>();
-
+  String baseUrl = '192.168.1.15';
   @override
   void dispose() {
     nameTextInputController.dispose();
@@ -55,6 +56,7 @@ class _SignUpScreen extends State<SignUpScreen> {
         email: emailTextInputController.text.trim(),
         password: passwordTextInputController.text.trim(),
       );
+      Dio().post("http://$baseUrl:8080/client/register", data: {'email': emailTextInputController.text});
       await userCredential.user?.updateDisplayName(nameTextInputController.text.trim());
     } on FirebaseAuthException catch (e) {
       print(e.code);

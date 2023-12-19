@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -15,20 +16,27 @@ Future<void> updateDisplayedName(user, name)async {
 
 class _AccountScreenState extends State<AccountScreen> {
   final user = FirebaseAuth.instance.currentUser;
+  final displayNameController = TextEditingController();
+  String baseUrl = '192.168.1.15';
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
 
   Future<void> signOut() async {
     final navigator = Navigator.of(context);
-
     await FirebaseAuth.instance.signOut();
-
     navigator.pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 30, 30, 30),
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 30, 30, 30),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -41,24 +49,89 @@ class _AccountScreenState extends State<AccountScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Open shopping cart',
             onPressed: () => signOut(),
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Ваш Email: ${user?.email}'),
-            TextButton(onPressed: () => updateDisplayedName(user, 'moma'), child: const Text('Обновить имя')),
-            TextButton(
-              onPressed: () => signOut(),
-              child: const Text('Выйти'),
+      body:
+      SingleChildScrollView(
+        child: LayoutBuilder (builder: (context, constraint){
+          return Center(
+            child: Column(
+              children: [
+                SizedBox(height: 50),
+                Text("МОИ ДАННЫЕ", style: TextStyle(fontSize: 24, color: Colors.white, letterSpacing: 1)),
+                SizedBox(height: 55),
+                Text("НИК", style: TextStyle(fontSize: 20, color: Colors.white, letterSpacing: 1)),
+                Padding(
+                  padding: const EdgeInsets.only(left: 30, right: 30, top: 20),
+                  child: TextFormField(
+                    controller: displayNameController,
+                    onFieldSubmitted: (text) {
+                      setState(() {
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Nickname",
+                      fillColor: Colors.black,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                        borderSide: BorderSide(
+                          color: Colors.blue,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                        borderSide: BorderSide(
+                          color: Colors.red,
+                          width: 2.0,
+                        ),
+                      ),
+                      hintStyle: TextStyle(color: Colors.white),
+                      labelStyle: TextStyle(color: Colors.white),
+                    ),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                TextButton(
+                  onPressed: () => sendInfo(),
+                  child: const Text('Изменить имя', style: TextStyle(fontSize: 17, color: Colors.white, letterSpacing: 1)),
+                ),
+                SizedBox(height: 290),
+                TextButton(
+                  onPressed: () => signOut(),
+                  child: const Text('Выйти', style: TextStyle(fontSize: 25, color: Colors.white, letterSpacing: 1)),
+                ),
+              ],
             ),
-          ],
+          );
+        })
         ),
-      ),
-    );
+      );
   }
+
+
+
+
+
+  getData() async{
+    var response = await Dio().get("http://$baseUrl:8080/client/${FirebaseAuth.instance.currentUser?.email}");
+    setState(() {
+      displayNameController.text = response.data["displayName"].toString();
+      // if (response.data["role"].toString() == "ADMIN"){
+      //   isAdmin = true;
+      // } else {
+      //   isAdmin = false;
+      // }
+    });
+  }
+
+
+  sendInfo() {
+    var displayName = displayNameController.text;
+    Dio().put("http://192.168.1.15:8080/client/change-name/$displayName/${FirebaseAuth.instance.currentUser?.email}");
+  }
+
 }

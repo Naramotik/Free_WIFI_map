@@ -86,7 +86,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   int counter = 1;
   double rating = 0;
   bool isVisible = false;
-  bool isLoading = true;
+  bool isLoading = false;
   void counterPlus() {
     counter++;
   }
