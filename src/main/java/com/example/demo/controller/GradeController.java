@@ -36,7 +36,8 @@ public class GradeController {
         return gradeService.isGradeExist(longitude, user_email);
     }
     @GetMapping("/my_grade/{longitude}/{user_email}")
-    public String getMyGrade(@PathVariable String latitude) {
-        return gradeService.findAvgGrade(latitude);
+    public String getMyGrade(@PathVariable String latitude,
+                             @PathVariable("user_email") String user_email) {
+        return gradeService.findMyGrade(latitude, user_email);
     }
 }
