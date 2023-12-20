@@ -80,7 +80,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.0.109';
+  String baseUrl = '192.168.1.15';
 
   // Логика для создания нового id для метки
   int counter = 1;
@@ -479,8 +479,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () async {
-                          displaygrade =
-                              await _setGrade(rating_glob, point, grade);
+                          displaygrade = await _setGrade(rating_glob, point, grade);
+                          Navigator.pop(context);
+                          EasyLoading.showSuccess('Оценка отправлена');
                           setState(() {
                             grade = displaygrade;
                           });
