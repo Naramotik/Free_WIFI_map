@@ -84,7 +84,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   // Логика для создания нового id для метки
   int counter = 1;
-  double rating = 0;
   bool isVisible = true;
   bool isLoading = false;
 
@@ -204,11 +203,12 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     textAlign: TextAlign.center, textScaleFactor: 0.9),
                 onPressed: () async {
                   var dio = Dio();
-                  var response = await dio.post("http://$baseUrl:8080/comment",
-                      data: {
-                        'comment': commentController.text,
-                        'latitude': point.latitude.toString()
-                      });
+                  var response =
+                      await dio.post("http://$baseUrl:8080/comment", data: {
+                    'comment': commentController.text,
+                    'latitude': point.latitude.toString(),
+                    'email': user?.email.toString()
+                  });
                   print(response);
                   Navigator.popUntil(
                     context,
@@ -268,7 +268,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   itemBuilder: (BuildContext context, int index) {
                     return Card(
                       child: ListTile(
-                        title: Text(jsonComments[index]['comment']),
+                        title:
+                            Text(jsonComments[index]['client']['displayName']),
+                        subtitle: Text(jsonComments[index]['comment']),
                       ),
                     );
                   },
@@ -396,9 +398,30 @@ class _YandexMapTestState extends State<YandexMapTest> {
     print(isVisible);
   }
 
+  Future<String> _setGrade(double rating_glob, Point point, String grade) async {
+    var middlegrade = grade;
+    Dio().post('http://$baseUrl:8080/grade', data: {
+      'grade': rating_glob,
+      'latitude': point.latitude,
+      "email": user!.email.toString()
+    });
+    var response;
+    try {
+      response =
+          await Dio().get("http://$baseUrl:8080/grade/${point.latitude}/avg");
+    } on DioException catch (_) {
+      print(_.message);
+    }
+    setState(() {
+      middlegrade = response.data;
+    });
+    return middlegrade;
+  }
+
   // Всплывающее меню (само меню)
   Column _buildBottomNavMenu(Point point, String grade, String displayname) {
     double rating_glob = 0;
+    String displaygrade = '0.0';
     return Column(
       children: [
         Row(
@@ -412,7 +435,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text(grade, textAlign: TextAlign.right),
+                    title: Text(
+                        double.tryParse(grade)!.isNaN
+                            ? '0.0'
+                            : grade.toString(),
+                        textAlign: TextAlign.right),
                   ),
                 ],
               ),
@@ -441,7 +468,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                       ),
                       updateOnDrag: true,
                       onRatingUpdate: (rating) => setState(() {
-                        rating_glob = this.rating;
+                        rating_glob = rating;
                       }),
                     ),
                   ),
@@ -451,14 +478,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   child: Container(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          displaygrade =
+                              await _setGrade(rating_glob, point, grade);
                           setState(() {
-                            isVisible = !isVisible;
-                            Dio().post('http://$baseUrl:8080/grade', data: {
-                              'grade': rating,
-                              'latitude': point.latitude,
-                              "email": user!.email.toString()
-                            });
+                            grade = displaygrade;
                           });
                         },
                         child: const Text('send'),
@@ -545,7 +569,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
         }).whenComplete(() {
       isVisible = true;
     });
-    ;
   }
 
   Timer? _timer;
