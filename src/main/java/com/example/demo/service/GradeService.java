@@ -60,4 +60,18 @@ public class GradeService {
         }
         return visible;
     }
+
+    public String findMyGrade(String longitude, String email){
+        Mark mark = markRepository.findByLongitude(longitude).get();
+        Client client = clientService.findClientByEmail(email);
+        List<Grade> grades = gradeRepository.findByClient(client);
+        String myGrade;
+        for(Grade grade: grades){
+            if (grade.getMark().equals(mark)) {
+                myGrade = grade.getScore().toString();
+                break;
+            }
+        }
+        return "0";
+    }
 }
