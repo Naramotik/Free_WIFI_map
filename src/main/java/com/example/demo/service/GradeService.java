@@ -69,7 +69,6 @@ public class GradeService {
         for(Grade grade: grades){
             if (grade.getMark().equals(mark)) {
                 myGrade = grade.getScore().toString();
-                break;
             }
         }
         if (!(myGrade == null)){

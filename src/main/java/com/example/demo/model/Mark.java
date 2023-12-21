@@ -23,13 +23,13 @@ public class Mark {
     @Column(name = "longitude")
     String longitude;
     @JsonIgnore
-    @OneToMany(mappedBy = "mark")
+    @OneToMany(mappedBy = "mark", orphanRemoval = true)
     private List<Comment> comments;
     @JsonIgnore
-    @OneToMany(mappedBy = "mark")
+    @OneToMany(mappedBy = "mark", orphanRemoval = true)
     private List<Complain> complains;
     @JsonIgnore
-    @OneToMany(mappedBy = "mark")
+    @OneToMany(mappedBy = "mark", orphanRemoval = true)
     private List<Grade> grades;
     @ManyToOne
     @JoinColumn(name = "client_id")

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MarkService {
@@ -26,5 +27,14 @@ public class MarkService {
 
     public List<Mark> findAll(){
         return markRepository.findAll();
+    }
+
+    public String delete(String longitude, String user_email){
+        Optional<Mark> mark = markRepository.findByLongitude(longitude);
+        Client client = clientService.findClientByEmail(user_email);
+        if (mark.get().getClient().equals(client) || client.getRole().equals("ADMIN")){
+            markRepository.delete(mark.get());
+            return "Success";
+        } else return "Not allowed";
     }
 }

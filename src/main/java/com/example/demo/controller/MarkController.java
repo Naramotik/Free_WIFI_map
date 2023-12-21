@@ -32,6 +32,11 @@ public class MarkController {
         return new ResponseEntity<List<Mark>> (markService.findAll(), HttpStatus.OK);
     }
 
+    @DeleteMapping("/{longitude}/{user_email}")
+    public String delete(@PathVariable String longitude,
+                       @PathVariable String user_email){
+        return markService.delete(longitude, user_email);
+    }
 
 }
 
