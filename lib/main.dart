@@ -75,10 +75,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   late YandexMapController controller;
   final List<MapObject> mapObjects = [];
   MapObjectId mapObjectId = const MapObjectId('selPoint');
-  final animation =
-      const MapAnimation(type: MapAnimationType.smooth, duration: 2.0);
-  static const Point _startPoint =
-      Point(latitude: 56.129057, longitude: 40.406635);
+  final animation = const MapAnimation(type: MapAnimationType.smooth, duration: 1.3);
+  static const Point _startPoint = Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
   String baseUrl = '192.168.1.15';
 
@@ -418,134 +416,186 @@ class _YandexMapTestState extends State<YandexMapTest> {
     return middlegrade;
   }
 
+
+
+
   // Всплывающее меню (само меню)
-  Column _buildBottomNavMenu(Point point, String grade, String displayname) {
+  SingleChildScrollView _buildBottomNavMenu(Point point, String grade, String displayname) {
     double rating_glob = 0;
     String displaygrade = '0.0';
-    return Column(
-      children: [
-        Row(
-          children: <Widget>[
-            const Expanded(
-              child: ListTile(
-                  leading: Icon(Icons.star_border_sharp),
-                  title: Text('Rating')),
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  ListTile(
-                    title: Text(
-                        double.tryParse(grade)!.isNaN
-                            ? '0.0'
-                            : grade.toString(),
-                        textAlign: TextAlign.right),
-                  ),
-                ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Row(
+            children: <Widget>[
+              const Expanded(
+                child: ListTile(
+                    leading: Icon(Icons.star_border_sharp),
+                    title: Text('Rating')),
               ),
-            ),
-          ],
-        ),
-        Visibility(
-          visible: isVisible,
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black12)),
-                    width: 200,
-                    alignment: Alignment.center,
-                    child: RatingBar.builder(
-                      minRating: 1,
-                      maxRating: 5,
-                      itemSize: 25,
-                      itemBuilder: (context, _) => const Icon(
-                        Icons.star,
-                        color: Colors.amber,
+              Expanded(
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                          double.tryParse(grade)!.isNaN
+                              ? '0.0'
+                              : grade.toString(),
+                          textAlign: TextAlign.right),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Visibility(
+            visible: isVisible,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black12)),
+                      width: 200,
+                      alignment: Alignment.center,
+                      child: RatingBar.builder(
+                        minRating: 1,
+                        maxRating: 5,
+                        itemSize: 25,
+                        itemBuilder: (context, _) => const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        updateOnDrag: true,
+                        onRatingUpdate: (rating) => setState(() {
+                          rating_glob = rating;
+                        }),
                       ),
-                      updateOnDrag: true,
-                      onRatingUpdate: (rating) => setState(() {
-                        rating_glob = rating;
-                      }),
                     ),
                   ),
+                  Expanded(
+                    flex: 5,
+                    child: Container(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () async {
+                            displaygrade = await _setGrade(rating_glob, point, grade);
+                            Navigator.pop(context);
+                            EasyLoading.showSuccess('Оценка отправлена');
+                            setState(() {
+                              grade = displaygrade;
+                            });
+                          },
+                          child: const Text('send'),
+                        )),
+                  ),
+                ]),
+          ),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: ListTile(
+                  leading: Icon(Icons.people_alt_outlined),
+                  title: Text('Added by'),
                 ),
+              ),
+              Expanded(
+                child: ListTile(
+                    title: Text(displayname, textAlign: TextAlign.right)),
+              ),
+            ],
+          ),
+          InkWell(
+            onTap: () => {_buildReviewMenu(point)},
+            child: const Row(
+              children: <Widget>[
+                Expanded(
+                    flex: 5,
+                    child: ListTile(
+                      leading: Icon(Icons.comment),
+                      title: Text('Comments'),
+                    )),
+                Expanded(
+                  flex: 1,
+                  child: ListTile(
+                    leading: Icon(Icons.arrow_forward_ios_rounded),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () => {_buildComplain(point)}, // Пожаловаться
+            child: const Row(
+              children: <Widget>[
                 Expanded(
                   flex: 5,
-                  child: Container(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () async {
-                          displaygrade = await _setGrade(rating_glob, point, grade);
-                          Navigator.pop(context);
-                          EasyLoading.showSuccess('Оценка отправлена');
-                          setState(() {
-                            grade = displaygrade;
-                          });
-                        },
-                        child: const Text('send'),
-                      )),
-                ),
-              ]),
-        ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: ListTile(
-                leading: Icon(Icons.people_alt_outlined),
-                title: Text('Added by'),
-              ),
-            ),
-            Expanded(
-              child: ListTile(
-                  title: Text(displayname, textAlign: TextAlign.right)),
-            ),
-          ],
-        ),
-        InkWell(
-          onTap: () => {_buildReviewMenu(point)},
-          child: const Row(
-            children: <Widget>[
-              Expanded(
-                  flex: 5,
                   child: ListTile(
-                    leading: Icon(Icons.comment),
-                    title: Text('Comments'),
-                  )),
-              Expanded(
-                flex: 1,
-                child: ListTile(
-                  leading: Icon(Icons.arrow_forward_ios_rounded),
+                    leading: Icon(Icons.error_outline),
+                    title: Text('Complain'),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        InkWell(
-          onTap: () => {_buildComplain(point)}, // Пожаловаться
-          child: const Row(
-            children: <Widget>[
-              Expanded(
-                flex: 5,
-                child: ListTile(
-                  leading: Icon(Icons.error_outline),
-                  title: Text('Complain'),
+                Expanded(
+                  flex: 1,
+                  child: ListTile(leading: Icon(Icons.arrow_forward_ios_rounded)),
                 ),
-              ),
-              Expanded(
-                flex: 1,
-                child: ListTile(leading: Icon(Icons.arrow_forward_ios_rounded)),
-              ),
-            ],
+              ],
+            ),
           ),
-        )
-      ],
+          InkWell(
+            onTap: ()  {
+              setState() {};
+              }, // Удалить свою метку
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 5,
+                  child: TextButton(
+                      onPressed: () async {
+                        setState(() {
+                            final placemarkToDelete = PlacemarkMapObject(
+                                mapId: mapObjectId,
+                                point: point);
+                            mapObjects.remove(placemarkToDelete);
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  Future.delayed(const Duration(seconds: 2), () {
+                                    Navigator.of(context).pop(true);
+                                  });
+                                  return AlertDialog(
+                                    title: Text("Информация"),
+                                    content: FutureBuilder(future: deleteMark(point), builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                                                if (snapshot.data.toString() == "Success")
+                                                  return Container(child: Text("Точка будет удалена"));
+                                                else return Container(child: Text("Это не ваша точка"));
+                                              })
+                                  );
+                                }
+                            );
+
+
+
+                        });
+                      },
+                      child: const Text("DELETE", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 16),)),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
     //setState(() {});
   }
+
+  Future<String> deleteMark(Point point) async {
+    var response = await Dio().delete("http://192.168.1.15:8080/mark/${point.longitude}/${FirebaseAuth.instance.currentUser?.email}");
+    return response.data.toString();
+  }
+
 
   // Всплывающее меню (вызов меню)
   Future<void> _showToast(Point point, String? displayname) async {
@@ -563,7 +613,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
             return Text("dfdf");
           else
             return Container(
-              height: 300,
+              height: 330,
               child: _buildBottomNavMenu(
                   point, grade.data.toString(), displayname!),
             );
@@ -798,5 +848,16 @@ class _YandexMapTestState extends State<YandexMapTest> {
         ),
       ]),
     );
+  }
+
+  bool isAdmin = false;
+  Future getData() async{
+    var response = await Dio().get("http://$baseUrl:8080/client/${FirebaseAuth.instance.currentUser?.email}");
+    setState(() {
+      if (response.data["role"].toString() == "ADMIN"){
+        isAdmin = true;
+      }
+    });
+
   }
 }
