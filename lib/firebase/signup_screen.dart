@@ -94,7 +94,7 @@ class _SignUpScreen extends State<SignUpScreen> {
           key: formKey,
           child: Column(
             children: [
-              SizedBox(height: 40),
+              SizedBox(height: 50),
               TextFormField(
                 keyboardType: TextInputType.name,
                 autocorrect: false,
