@@ -557,9 +557,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
                                   );
                                 }
                             );
-
-
-
                         });
                       },
                       child: const Text("DELETE", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 16),)),
@@ -574,10 +571,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   Future<String> deleteMark(Point point) async {
-    var response = await Dio().delete("http://192.168.1.15:8080/mark/${point.longitude}/${FirebaseAuth.instance.currentUser?.email}");
+    var response = await Dio().delete("http://$baseUrl:8080/mark/${point.longitude}/${FirebaseAuth.instance.currentUser?.email}");
     return response.data.toString();
   }
-
 
   // Всплывающее меню (вызов меню)
   Future<void> _showToast(Point point, String? displayname) async {
@@ -698,7 +694,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   onTap: (PlacemarkMapObject self, Point point) async {
                     Point newPoint = self.point;
                     print('Tapped me at $newPoint');
-                    _showToast(newPoint, user!.displayName);
+                    var response = await Dio().get("http://$baseUrl:8080/mark/${newPoint.longitude}");
+                    _showToast(newPoint, response.data['client']['displayName']);
                     Mark mark = Mark(
                         id: null,
                         latitude: newPoint.latitude,
