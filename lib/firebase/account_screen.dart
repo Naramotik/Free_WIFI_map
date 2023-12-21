@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -96,7 +97,10 @@ class _AccountScreenState extends State<AccountScreen> {
                 SizedBox(height: 20),
 
                 TextButton(
-                  onPressed: () => sendInfo(),
+                  onPressed: () {
+                    sendInfo();
+                    EasyLoading.showSuccess('Имя изменено');
+                  },
                   child: const Text('Изменить имя', style: TextStyle(fontSize: 17, color: Colors.white, letterSpacing: 1)),
                 ),
                 SizedBox(height: 290),

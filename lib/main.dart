@@ -78,12 +78,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
   final animation = const MapAnimation(type: MapAnimationType.smooth, duration: 1.3);
   static const Point _startPoint = Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.109';
 
   // Логика для создания нового id для метки
   int counter = 1;
   bool isVisible = true;
-  bool isLoading = false;
 
   void counterPlus() {
     counter++;
@@ -379,23 +378,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
         });
   }
 
-  void _getVisible(double longitude, String? email) async {
-    var response;
-    try {
-      response =
-          await Dio().get("http://$baseUrl:8080/grade/$longitude/$email");
-    } on DioException catch (_) {
-      print(_.message);
-    }
-    if (response.data) {
-      setState(() {
-        isVisible = true;
-        isLoading = false;
-      });
-    }
-    print(isVisible);
-  }
-
   Future<String> _setGrade(double rating_glob, Point point, String grade) async {
     var middlegrade = grade;
     Dio().post('http://$baseUrl:8080/grade', data: {
@@ -449,7 +431,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
             ],
           ),
           Visibility(
-            visible: isVisible,
+            visible: isLogin(),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -609,9 +591,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
           topRight: Radius.circular(10),
         ))),
         builder: (context) {
-          if (isLoading == true)
-            return Text("dfdf");
-          else
             return Container(
               height: 330,
               child: _buildBottomNavMenu(
