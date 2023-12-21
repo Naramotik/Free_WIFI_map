@@ -78,7 +78,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   final animation = const MapAnimation(type: MapAnimationType.smooth, duration: 1.3);
   static const Point _startPoint = Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.0.109';
+  String baseUrl = '192.168.1.15';
 
   // Логика для создания нового id для метки
   int counter = 1;

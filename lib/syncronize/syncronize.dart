@@ -6,7 +6,7 @@ import 'databasehelper.dart';
 import 'mark.dart';
 
 class SyncronizationData {
-  String baseUrl = '192.168.0.109';
+  String baseUrl = '192.168.1.15';
   static Future<bool> isInternet() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
