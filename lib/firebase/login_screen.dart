@@ -69,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        backgroundColor: Colors.black45,
         title: const Text('Войти'),
       ),
       body: Padding(
@@ -115,6 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.black45),
                 onPressed: login,
                 child: const Center(child: Text('Войти')),
               ),

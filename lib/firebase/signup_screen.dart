@@ -85,6 +85,7 @@ class _SignUpScreen extends State<SignUpScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        backgroundColor: Colors.black45,
         title: const Text('Зарегистрироваться'),
       ),
       body: Padding(
@@ -93,6 +94,7 @@ class _SignUpScreen extends State<SignUpScreen> {
           key: formKey,
           child: Column(
             children: [
+              SizedBox(height: 40),
               TextFormField(
                 keyboardType: TextInputType.name,
                 autocorrect: false,
@@ -105,6 +107,7 @@ class _SignUpScreen extends State<SignUpScreen> {
                   hintText: 'Введите Отображаемое имя',
                 ),
               ),
+              SizedBox(height: 30),
               TextFormField(
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
@@ -166,6 +169,7 @@ class _SignUpScreen extends State<SignUpScreen> {
               ),
               const SizedBox(height: 30),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.black45),
                 onPressed: signUp,
                 child: const Center(child: Text('Регистрация')),
               ),
