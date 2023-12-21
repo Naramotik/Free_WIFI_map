@@ -29,6 +29,9 @@ public class MarkService {
         return markRepository.findAll();
     }
 
+    public Mark getMark(String longitude){
+        return markRepository.findByLongitude(longitude).get();
+    }
     public String delete(String longitude, String user_email){
         Optional<Mark> mark = markRepository.findByLongitude(longitude);
         Client client = clientService.findClientByEmail(user_email);
