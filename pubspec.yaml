@@ -31,7 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^8.3.0
-  sqflite: any
   path_provider: any
   geolocator: ^10.1.0
   geocoding: ^2.1.1

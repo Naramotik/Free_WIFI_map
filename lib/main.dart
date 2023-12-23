@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,10 +9,6 @@ import 'package:free_wifi_map/firebase/account_screen.dart';
 import 'package:free_wifi_map/firebase/services/firebase_stream.dart';
 import 'package:free_wifi_map/firebase/signup_screen.dart';
 import 'package:free_wifi_map/firebase_options.dart';
-import 'package:free_wifi_map/syncronize/mark.dart';
-import 'package:free_wifi_map/syncronize/controller.dart';
-import 'package:free_wifi_map/syncronize/databasehelper.dart';
-import 'package:free_wifi_map/syncronize/syncronize.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +19,6 @@ import 'firebase/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SqfliteDatabaseHelper.instance.db;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -78,7 +72,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   final animation = const MapAnimation(type: MapAnimationType.smooth, duration: 1.3);
   static const Point _startPoint = Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.109';
 
   // Логика для создания нового id для метки
   int counter = 1;
@@ -597,51 +591,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
     });
   }
 
-  Timer? _timer;
-  List? list;
-  bool loading = true;
-
-  Future userList() async {
-    list = await Controller().fetchData();
-    setState(() {
-      loading = false;
-    });
-    //print(list);
-  }
-
-  @override
-  initState() {
-    super.initState();
-    loaderTest();
-    userList();
-    isInteret();
-    EasyLoading.addStatusCallback((status) {
-      print('EasyLoading Status $status');
-      if (status == EasyLoadingStatus.dismiss) {
-        _timer?.cancel();
-      }
-    });
-  }
-
-  Future syncToMysql() async {
-    await SyncronizationData().fetchAllInfo().then((userList) async {
-      EasyLoading.show(status: 'Dont close app. we are sync...');
-      await SyncronizationData().saveToMysqlWith(userList);
-      EasyLoading.showSuccess('Successfully save to database');
-    });
-  }
-
-  Future isInteret() async {
-    await SyncronizationData.isInternet().then((connection) {
-      if (connection) {
-        print("Internet connection abailale");
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("No Internet")));
-      }
-    });
-  }
-
   bool isLogin() {
     if ((user == null)) {
       return false;
@@ -696,19 +645,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     print('Tapped me at $newPoint');
                     var response = await Dio().get("http://$baseUrl:8080/mark/${newPoint.longitude}");
                     _showToast(newPoint, response.data['client']['displayName']);
-                    Mark mark = Mark(
-                        id: null,
-                        latitude: newPoint.latitude,
-                        longitude: newPoint.longitude);
-                    await Controller().addData(mark).then((value) {
-                      if (value! > 0) {
-                        print("Success");
-                        userList();
-                      } else {
-                        print("Fail");
-                      }
-                    });
-                  });
+                 });
               try {
                 var response =
                     await Dio().post('http://$baseUrl:8080/mark', data: {
