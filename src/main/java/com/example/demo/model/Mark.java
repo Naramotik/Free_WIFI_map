@@ -22,6 +22,16 @@ public class Mark {
     String latitude;
     @Column(name = "longitude")
     String longitude;
+
+    @Column(name = "ssid")
+    String ssid;
+    @Column(name = "signalLevel")
+    String signalLevel;
+    @Column(name = "frequency")
+    String frequency;
+    @Column(name = "level")
+    String level;
+
     @JsonIgnore
     @OneToMany(mappedBy = "mark", orphanRemoval = true)
     private List<Comment> comments;
