@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
+//import 'package:android_flutter_wifi/android_flutter_wifi.dart';
+import 'package:android_flutter_wifi/android_flutter_wifi.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:free_wifi_map/firebase/account_screen.dart';
@@ -18,6 +21,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:wifi_iot/wifi_iot.dart' as iot;
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import 'firebase/login_screen.dart';
@@ -68,6 +72,7 @@ class YandexMapTest extends StatefulWidget {
   State<YandexMapTest> createState() => _YandexMapTestState();
 }
 
+const iot.NetworkSecurity STA_DEFAULT_SECURITY = iot.NetworkSecurity.WPA;
 class _YandexMapTestState extends State<YandexMapTest> {
   var user = FirebaseAuth.instance.currentUser;
   final commentController = TextEditingController();
@@ -83,12 +88,23 @@ class _YandexMapTestState extends State<YandexMapTest> {
   // Логика для создания нового id для метки
   int counter = 1;
   bool isVisible = true;
-
+  List<WifiNetwork?>? _htResultNetwork;
+  final TextStyle textStyle = TextStyle(color: Colors.white);
   void counterPlus() {
     counter++;
   }
-
   Position? _currentLocation;
+
+  var ssid = '13';
+  var signalLevel= '';
+  var frequency= '';
+  var level= '';
+
+
+
+
+
+
 
   // Рисовалка кружков
   Future<Uint8List> _rawPlacemarkImage() async {
@@ -115,6 +131,41 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
     return pngBytes!.buffer.asUint8List();
   }
+
+  String ssidByIot = 'nuul IOT';
+  getWifiList() async {
+    DhcpInfo dhcpInfo = await AndroidFlutterWifi.getDhcpInfo();
+    print('ip: ${dhcpInfo.serverAddress}');
+    print(ssidByIot);
+    List<WifiNetwork> wifiList = await AndroidFlutterWifi.getWifiScanResult();
+    for (int i = 0; i < wifiList.length; i++)
+    if(wifiList.isNotEmpty){
+      WifiNetwork wifiNetwork = wifiList[i];
+      print('ssid: ${wifiNetwork.ssid}');
+      print('signalLevel: ${wifiNetwork.signalLevel}');
+      print('bssid: ${wifiNetwork.bssid}');
+      print('frequency: ${wifiNetwork.frequency}');
+      print('level: ${wifiNetwork.level}');
+      print('security: ${wifiNetwork.security}');
+      print('Name:---------------------------');
+    } else {
+      print("empty");
+      print("empty");
+      print("empty");
+      print("empty");
+      print("empty");
+      print("empty");
+      print("empty");
+      print("empty");
+    }
+    print("before CONNECTION");    print("before CONNECTION");
+  }
+
+
+  init() async {
+    await AndroidFlutterWifi.init();
+  }
+
 
   // Добавление меток с бд
   void loaderTest() async {
@@ -403,6 +454,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   // Всплывающее меню (само меню)
   SingleChildScrollView _buildBottomNavMenu(Point point, String grade, String displayname) {
+
+    getOpeningMarkInfo(point);
     double rating_glob = 0;
     String displaygrade = '0.0';
     return SingleChildScrollView(
@@ -529,7 +582,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
           InkWell(
             onTap: ()  {
               setState() {};
-              }, // Удалить свою метку
+            }, // Удалить свою метку
             child: Row(
               children: <Widget>[
                 Expanded(
@@ -537,33 +590,86 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   child: TextButton(
                       onPressed: () async {
                         setState(() {
-                            final placemarkToDelete = PlacemarkMapObject(
-                                mapId: mapObjectId,
-                                point: point);
-                            mapObjects.remove(placemarkToDelete);
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  Future.delayed(const Duration(seconds: 2), () {
-                                    Navigator.of(context).pop(true);
-                                  });
-                                  return AlertDialog(
+                          final placemarkToDelete = PlacemarkMapObject(
+                              mapId: mapObjectId,
+                              point: point);
+                          mapObjects.remove(placemarkToDelete);
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                Future.delayed(const Duration(seconds: 2), () {
+                                  Navigator.of(context).pop(true);
+                                });
+                                return AlertDialog(
                                     title: Text("Информация"),
                                     content: FutureBuilder(future: deleteMark(point), builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                                                if (snapshot.data.toString() == "Success")
-                                                  return Container(child: Text("Точка будет удалена"));
-                                                else return Container(child: Text("Это не ваша точка"));
-                                              })
-                                  );
-                                }
-                            );
+                                      if (snapshot.data.toString() == "Success")
+                                        return Container(child: Text("Точка будет удалена"));
+                                      else return Container(child: Text("Это не ваша точка"));
+                                    })
+                                );
+                              }
+                          );
                         });
                       },
                       child: const Text("DELETE", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 16),)),
                 ),
               ],
             ),
-          )
+          ),
+          InkWell(
+            onTap: ()  {
+              setState() {};
+            }, // Удалить свою метку
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 5,
+                  child: TextButton(
+                      onPressed: () async {
+                        ;
+                      },
+                      child: Text("${ssid}", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 16),)),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: ()  {
+              setState() {};
+            }, // Удалить свою метку
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 5,
+                  child: TextButton(
+                      onPressed: () async {
+                        ;
+                      },
+                      child: Text("${signalLevel}", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 16),)),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: ()  {
+              setState() {};
+            }, // Удалить свою метку
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 5,
+                  child: TextButton(
+                      onPressed: () async {
+                        ;
+                      },
+                      child: Text("${level}", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 16),)),
+                ),
+              ],
+            ),
+          ),
+
+
         ],
       ),
     );
@@ -609,9 +715,15 @@ class _YandexMapTestState extends State<YandexMapTest> {
     //print(list);
   }
 
+  getSSID() async {
+    ssidByIot = await iot.WiFiForIoTPlugin.getSSID() as String;
+  }
+
   @override
   initState() {
     super.initState();
+    getSSID();
+    init();
     loaderTest();
     userList();
     isInteret();
@@ -761,19 +873,62 @@ class _YandexMapTestState extends State<YandexMapTest> {
             ),
           ),
         ),
-        // IconButton(
-        // icon: Icon(Icons.refresh_sharp),
-        // onPressed: () async {
-        // await SyncronizationData.isInternet().then((connection) {
-        // if (connection) {
-        // syncToMysql();
-        // print("Internet connection abailale");
-        // } else {
-        // ScaffoldMessenger.of(context)
-        //     .showSnackBar(SnackBar(content: Text("No Internet")));
-        // }
-        // });
-        // }),
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Expanded(
+              flex: 2,
+              child: Container(
+                decoration: const ShapeDecoration(
+                  color: Colors.black45,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    iot.WiFiForIoTPlugin.connect('MTSRouter-5G-B9C733',
+                        password: '61647596',
+                        joinOnce: true,
+                        security: STA_DEFAULT_SECURITY);},
+                  icon: Icon(
+                    Icons.person,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Container(
+                decoration: const ShapeDecoration(
+                  color: Colors.black45,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    getWifiList();},
+                  icon: Icon(
+                    Icons.person,
+                  ),
+                ),
+              ),
+            ),
+
+
+
+
+
+
+
+
         const Spacer(
           flex: 5,
         ),
@@ -785,6 +940,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
               onPressed: () async {
                 final status = await permissionLocation.request();
                 if (status == PermissionStatus.granted) {
+
+
+
                   _currentLocation = await Geolocator.getCurrentPosition();
                   setState(() {
                     // Перемещение камеры на заданный startPoint при запуске приложения
@@ -802,6 +960,121 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 } else {
                   print('Location permission denied.');
                 }
+
+
+
+
+                  //Данные для создания точки
+                  getServerSSID();
+                  print(serverSSID);
+
+
+                  List<WifiNetwork> wifiList = await AndroidFlutterWifi.getWifiScanResult();
+                  for (int i = 0; i < wifiList.length; i++) {
+                    if(wifiList.isNotEmpty){
+                      WifiNetwork wifiNetwork = wifiList[i];
+                      //Установка данных со списка всех сетей
+                      if (wifiNetwork.ssid == serverSSID){
+                        ssid = wifiNetwork.ssid!;
+                        signalLevel = wifiNetwork.signalLevel!;
+                        frequency = wifiNetwork.frequency!;
+                        level = wifiNetwork.level!;
+                      }
+                      print('ssid: ${wifiNetwork.ssid}');
+                      print('signalLevel: ${wifiNetwork.signalLevel}');
+                      print('bssid: ${wifiNetwork.bssid}');
+                      print('frequency: ${wifiNetwork.frequency}');
+                      print('level: ${wifiNetwork.level}');
+                      print('security: ${wifiNetwork.security}');
+                      print('Name:---------------------------');
+                    } else {
+                      print("empty");
+                      print("empty");
+
+                    }
+                  }
+                  addingButtonStatus = true;
+
+
+
+
+                  if (addingButtonStatus == true) {
+                    // Задание нового id для метки
+                    counterPlus();
+                    mapObjectId = MapObjectId("$mapObjectId + $counter");
+                    Point selectedPoint = new Point(latitude: _currentLocation!.latitude, longitude: _currentLocation!.longitude);
+                    // Создание метки при нажатии на карту + Вывод информации о метке
+                    print('Tapped map at $selectedPoint'); // для проверки
+                    final placemark = PlacemarkMapObject(
+                        mapId: mapObjectId,
+                        point: selectedPoint,
+                        opacity: 200,
+                        icon: PlacemarkIcon.single(
+                          PlacemarkIconStyle(
+                              image: BitmapDescriptor.fromBytes(
+                                  await _rawPlacemarkImage())),
+                        ),
+                        onTap: (PlacemarkMapObject self, Point point) async {
+                          Point newPoint = self.point;
+                          print('Tapped me at $newPoint');
+                          var response = await Dio().get("http://$baseUrl:8080/mark/${newPoint.longitude}");
+                          _showToast(newPoint, response.data['client']['displayName']);
+                          Mark mark = Mark(
+                              id: null,
+                              latitude: newPoint.latitude,
+                              longitude: newPoint.longitude);
+                          await Controller().addData(mark).then((value) {
+                            if (value! > 0) {
+                              print("Success");
+                              userList();
+                            } else {
+                              print("Fail");
+                            }
+                          });
+                        });
+                    try {
+                      var response =
+                      await Dio().post('http://$baseUrl:8080/mark', data: {
+                        "mark": {
+                          'latitude': selectedPoint.latitude,
+                          'longitude': selectedPoint.longitude,
+                          'ssid': ssid,
+                          'signalLevel': signalLevel,
+                          'frequency': frequency,
+                          'level': level,
+                        },
+                        "email": user!.email.toString()
+                      });
+                      print(response);
+                    } on DioException catch (e) {
+                      print(e.message);
+                    }
+
+                    // Добавление метки на карту (в массив меток)
+                    setState(() {
+                      mapObjects.add(placemark);
+                    });
+                  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               },
               child: const Icon(Icons.gps_fixed)),
         ),
@@ -826,6 +1099,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
     );
   }
 
+  String serverSSID = '';
+  getServerSSID() async {
+    serverSSID = await iot.WiFiForIoTPlugin.getSSID() as String;
+  }
+
   bool isAdmin = false;
   Future getData() async{
     var response = await Dio().get("http://$baseUrl:8080/client/${FirebaseAuth.instance.currentUser?.email}");
@@ -835,5 +1113,14 @@ class _YandexMapTestState extends State<YandexMapTest> {
       }
     });
 
+  }
+
+
+  var gettedSignal;
+  var gettedLevel;
+  var gettedSsid;
+  Future<void> getOpeningMarkInfo(Point point) async {
+    var response = await Dio().get("http://$baseUrl:8080/mark/${point.longitude}");
+      print(response.data["ssid"]);
   }
 }
