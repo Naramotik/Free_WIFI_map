@@ -1119,6 +1119,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   getServerSSID() async {
     serverSSID = await iot.WiFiForIoTPlugin.getSSID() as String;
     serverPASS = await iot.WiFiForIoTPlugin.getWiFiAPPreSharedKey() as String;
+    print("sdfsduifhoifuheoirf");
+    print(serverPASS);
   }
 
   var gettedSignal;
