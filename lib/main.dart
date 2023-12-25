@@ -88,6 +88,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   List<WifiNetwork?>? _htResultNetwork;
   final TextStyle textStyle = TextStyle(color: Colors.white);
 
+  bool isMeAdmin = false;
+
   void counterPlus() {
     counter++;
   }
@@ -249,7 +251,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
               print('Tapped me at $newPoint');
               //_getVisible(newPoint.longitude, jsonList[jsonList.indexOf(item)]['client']['displayName']);
               _showToast(newPoint,
-                  jsonList[jsonList.indexOf(item)]['client']['displayName']);
+                  jsonList[jsonList.indexOf(item)]['client']['displayName'], jsonList[jsonList.indexOf(item)]['client']['email']);
             });
         // Обновление айдишника на новый
         setState(() {
@@ -491,7 +493,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   // Всплывающее меню (само меню)
   SingleChildScrollView _buildBottomNavMenu(
-      Point point, String grade, String displayname, String adress) {
+      Point point, String grade, String displayname, String adress, String email) {
     double rating_glob = 0;
     String displaygrade = '0.0';
     return SingleChildScrollView(
@@ -623,42 +625,48 @@ class _YandexMapTestState extends State<YandexMapTest> {
               ),
             ],
           ),
-          InkWell(
-            onTap: () => {_buildReviewMenu(point)},
-            child: const Row(
-              children: <Widget>[
-                Expanded(
-                    flex: 5,
+          Visibility(
+            visible: isLogin(),
+            child: InkWell(
+              onTap: () => {_buildReviewMenu(point)},
+              child: const Row(
+                children: <Widget>[
+                  Expanded(
+                      flex: 5,
+                      child: ListTile(
+                        leading: Icon(Icons.comment),
+                        title: Text('Comments'),
+                      )),
+                  Expanded(
+                    flex: 1,
                     child: ListTile(
-                      leading: Icon(Icons.comment),
-                      title: Text('Comments'),
-                    )),
-                Expanded(
-                  flex: 1,
-                  child: ListTile(
-                    leading: Icon(Icons.arrow_forward_ios_rounded),
+                      leading: Icon(Icons.arrow_forward_ios_rounded),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          InkWell(
-            onTap: () => {_buildComplain(point)}, // Пожаловаться
-            child: const Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 5,
-                  child: ListTile(
-                    leading: Icon(Icons.error_outline),
-                    title: Text('Complain'),
+          Visibility(
+            visible: isLogin(),
+            child: InkWell(
+              onTap: () => {_buildComplain(point)}, // Пожаловаться
+              child: const Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 5,
+                    child: ListTile(
+                      leading: Icon(Icons.error_outline),
+                      title: Text('Complain'),
+                    ),
                   ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child:
-                      ListTile(leading: Icon(Icons.arrow_forward_ios_rounded)),
-                ),
-              ],
+                  Expanded(
+                    flex: 1,
+                    child: ListTile(
+                        leading: Icon(Icons.arrow_forward_ios_rounded)),
+                  ),
+                ],
+              ),
             ),
           ),
           Row(
@@ -682,43 +690,48 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 Expanded(
                   flex: 5,
                   child: TextButton(
-                      onPressed: () async {
-                        setState(() {
-                          final placemarkToDelete = PlacemarkMapObject(
-                              mapId: mapObjectId, point: point);
-                          mapObjects.remove(placemarkToDelete);
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                Future.delayed(const Duration(seconds: 2), () {
-                                  Navigator.of(context).pop(true);
-                                });
-                                return AlertDialog(
-                                    title: Text("Информация"),
-                                    content: FutureBuilder(
-                                        future: deleteMark(point),
-                                        builder: (BuildContext context,
-                                            AsyncSnapshot<String> snapshot) {
-                                          if (snapshot.data.toString() ==
-                                              "Success")
-                                            return Container(
-                                                child: Text(
-                                                    "Точка будет удалена"));
-                                          else
-                                            return Container(
-                                                child:
-                                                    Text("Это не ваша точка"));
-                                        }));
+                    onPressed: () async {
+                      setState(() {
+                        final placemarkToDelete = PlacemarkMapObject(
+                            mapId: mapObjectId, point: point);
+                        mapObjects.remove(placemarkToDelete);
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              Future.delayed(const Duration(seconds: 2), () {
+                                Navigator.of(context).pop(true);
                               });
-                        });
-                      },
-                      child: const Text(
-                        "DELETE",
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16),
-                      )),
+                              return AlertDialog(
+                                  title: Text("Информация"),
+                                  content: FutureBuilder(
+                                      future: deleteMark(point),
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<String> snapshot) {
+                                        if (snapshot.data.toString() ==
+                                            "Success")
+                                          return Container(
+                                              child:
+                                                  Text("Точка будет удалена"));
+                                        else
+                                          return Container(
+                                              child: Text("Это не ваша точка"));
+                                      }));
+                            });
+                      });
+                    },
+                    child: Visibility(
+                        visible: isCreator(email) || isMeAdmin,
+                        child: const Text(
+                          "DELETE",
+                          style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16),
+                        ),
+                    replacement: Container(
+                      height: 10,
+                    ),),
+                  ),
                 ),
               ],
             ),
@@ -736,7 +749,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   // Всплывающее меню (вызов меню)
-  Future<void> _showToast(Point point, String? displayname) async {
+  Future<void> _showToast(Point point, String? displayname, String? email) async {
     String adress = '';
     List<Placemark> placemarks =
         await placemarkFromCoordinates(point.latitude, point.longitude);
@@ -765,7 +778,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
           return Container(
             height: 330,
             child: _buildBottomNavMenu(
-                point, grade.data.toString(), displayname!, adress),
+                point, grade.data.toString(), displayname!, adress, email!),
           );
         }).whenComplete(() {
       ssid = 'NO INFO';
@@ -793,6 +806,26 @@ class _YandexMapTestState extends State<YandexMapTest> {
       return false;
     } else {
       return true;
+    }
+  }
+
+  isAdmin() async{
+    var response = await Dio().get("http://$baseUrl:8080/client/${FirebaseAuth.instance.currentUser?.email}");
+    setState(() {
+      if (response.data["role"].toString() == "ADMIN"){
+        isMeAdmin = true;
+      } else {
+        isMeAdmin = false;
+      }
+    });
+  }
+
+  isCreator(String email){
+    if(email == user?.email.toString()){
+      return true;
+    }
+    else{
+      return false;
     }
   }
 
@@ -934,6 +967,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   //Данные для создания точки
                   getServerSSID();
                   print(serverSSID);
+                  print(serverPASS);
                   getLevelSpeed();
 
                   List<WifiNetwork> wifiList =
@@ -990,7 +1024,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                           var response = await Dio().get(
                               "http://$baseUrl:8080/mark/${selectedPoint.longitude}");
                           _showToast(selectedPoint,
-                              response.data['client']['displayName']);
+                              response.data['client']['displayName'], response.data['client']['email']);
                         });
                     try {
                       if (levelSpeed == 'true') {
@@ -1041,8 +1075,25 @@ class _YandexMapTestState extends State<YandexMapTest> {
           child: FloatingActionButton(
               heroTag: "place",
               backgroundColor: Colors.black87,
-              onPressed: () {
-                addingButtonStatus = true;
+              onPressed: () async {
+                final status = await permissionLocation.request();
+                if (status == PermissionStatus.granted) {
+                  _currentLocation = await Geolocator.getCurrentPosition();
+                  setState(() {
+                    controller.moveCamera(
+                      CameraUpdate.newCameraPosition(
+                        CameraPosition(
+                            target: Point(
+                                latitude: _currentLocation!.latitude,
+                                longitude: _currentLocation!.longitude),
+                            zoom: 20),
+                      ),
+                      animation: animation,
+                    );
+                  });
+                } else {
+                  print('Location permission denied.');
+                }
               },
               child: const Icon(Icons.place)),
         ),
@@ -1051,21 +1102,13 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   String serverSSID = '';
+  String serverPASS = '';
 
   getServerSSID() async {
     serverSSID = await iot.WiFiForIoTPlugin.getSSID() as String;
-  }
-
-  bool isAdmin = false;
-
-  Future getData() async {
-    var response = await Dio().get(
-        "http://$baseUrl:8080/client/${FirebaseAuth.instance.currentUser?.email}");
-    setState(() {
-      if (response.data["role"].toString() == "ADMIN") {
-        isAdmin = true;
-      }
-    });
+    serverPASS = await iot.WiFiForIoTPlugin.getWiFiAPPreSharedKey() as String;
+    print("sdfsduifhoifuheoirf");
+    print(serverPASS);
   }
 
   var gettedSignal;
