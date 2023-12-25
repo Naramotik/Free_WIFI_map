@@ -18,7 +18,7 @@ Future<void> updateDisplayedName(user, name)async {
 class _AccountScreenState extends State<AccountScreen> {
   final user = FirebaseAuth.instance.currentUser;
   final displayNameController = TextEditingController();
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.109';
   @override
   void initState() {
     super.initState();
