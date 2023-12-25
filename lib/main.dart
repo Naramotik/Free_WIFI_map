@@ -80,7 +80,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.0.112';
+  String baseUrl = '192.168.1.15';
 
   // Логика для создания нового id для метки
   int counter = 1;
@@ -100,22 +100,43 @@ class _YandexMapTestState extends State<YandexMapTest> {
   var level = 'NO INFO';
 
   // Рисовалка кружков
-  Future<Uint8List> _rawPlacemarkImage() async {
+  Future<Uint8List> _rawPlacemarkImage(String level) async {
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     const size = Size(50, 50);
     final fillPaint = Paint();
-    fillPaint.color = Colors.blueAccent;
-    final strokePaint = Paint()
-      ..color = Colors.green
+
+
+    if(level == "FAST"){
+      fillPaint.color = Colors.green;
+      final strokePaint = Paint()
+      ..color = Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    const radius = 20.0;
 
-    final circleOffset = Offset(size.height / 2, size.width / 2);
+      const radius = 20.0;
 
-    canvas.drawCircle(circleOffset, radius, fillPaint);
-    canvas.drawCircle(circleOffset, radius, strokePaint);
+      final circleOffset = Offset(size.height / 2, size.width / 2);
+
+      canvas.drawCircle(circleOffset, radius, fillPaint);
+      canvas.drawCircle(circleOffset, radius, strokePaint);
+    } else {
+      fillPaint.color = Colors.red;
+      final strokePaint = Paint()
+        ..color = Colors.black
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+
+      const radius = 20.0;
+
+      final circleOffset = Offset(size.height / 2, size.width / 2);
+
+      canvas.drawCircle(circleOffset, radius, fillPaint);
+      canvas.drawCircle(circleOffset, radius, strokePaint);
+    }
+
+
+
 
     final image = await recorder
         .endRecording()
@@ -160,6 +181,19 @@ class _YandexMapTestState extends State<YandexMapTest> {
     await AndroidFlutterWifi.init();
   }
 
+  Color setColor(String level){
+    if (level == "FAST")
+      return Colors.green;
+    else
+      return Colors.red;
+  }
+
+  bool consumeTapEventsPoint = false;
+  bool consumeTapEventsMethod(){
+    print(consumeTapEventsPoint.toString());
+    return !consumeTapEventsPoint;
+  }
+
   // Добавление меток с бд
   void loaderTest() async {
     List jsonList;
@@ -186,21 +220,29 @@ class _YandexMapTestState extends State<YandexMapTest> {
         print("----------------------------------------------------");
         print(jsonList[jsonList.indexOf(item)]['id']);
 
+        if (jsonList[jsonList.indexOf(item)]['level'] == null || jsonList[jsonList.indexOf(item)]['level'] == "SLOW")
+          jsonList[jsonList.indexOf(item)]['level'] = "SLOW";
+        else
+          jsonList[jsonList.indexOf(item)]['level'] = "FAST";
+
+
         mapObjectId = MapObjectId(jsonList[jsonList.indexOf(item)]['latitude']);
         var placemark = PlacemarkMapObject(
             //icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromAssetImage("assets/img.png"), isVisible: true)),
-            //text: PlacemarkText(text: "FAST", style: PlacemarkTextStyle(color: Colors.red, offsetFromIcon: false, offset: 3, placement: TextStylePlacement.top)),
+            text: PlacemarkText(text: "${jsonList[jsonList.indexOf(item)]['level']}", style: PlacemarkTextStyle(color: (setColor(jsonList[jsonList.indexOf(item)]['level'])), offsetFromIcon: false, offset: 3, placement: TextStylePlacement.top)),
             mapId: mapObjectId,
+            consumeTapEvents: consumeTapEventsMethod(),
             point: Point(
                 latitude:
                     double.parse(jsonList[jsonList.indexOf(item)]['latitude']),
                 longitude: double.parse(
                     jsonList[jsonList.indexOf(item)]['longitude'])),
             opacity: 1,
+            // icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromAssetImage("assets/1.bmp"), isVisible: true)),
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
                   image:
-                      BitmapDescriptor.fromBytes(await _rawPlacemarkImage())),
+                      BitmapDescriptor.fromBytes(await _rawPlacemarkImage(jsonList[jsonList.indexOf(item)]['level']))),
             ),
             onTap: (PlacemarkMapObject self, Point point) {
               Point newPoint = self.point;
@@ -952,7 +994,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         icon: PlacemarkIcon.single(
                           PlacemarkIconStyle(
                               image: BitmapDescriptor.fromBytes(
-                                  await _rawPlacemarkImage())),
+                                  await _rawPlacemarkImage(level))),
                         ),
                         onTap: (PlacemarkMapObject self, Point point) async {
                           Point newPoint = self.point;
