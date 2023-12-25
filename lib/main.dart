@@ -935,18 +935,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   getServerSSID();
                   print(serverSSID);
                   getLevelSpeed();
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
-                  print(levelSpeed);
 
                   List<WifiNetwork> wifiList =
                       await AndroidFlutterWifi.getWifiScanResult();
@@ -1028,7 +1016,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                             'ssid': ssid,
                             'signalLevel': signalLevel,
                             'frequency': frequency,
-                            'level': "FAST",
+                            'level': "SLOW",
                           },
                           "email": user!.email.toString()
                         });
@@ -1097,9 +1085,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   var levelSpeed = '';
-
   void getLevelSpeed() async {
     var result = await AndroidFlutterWifi.isConnectionFast()
-        .then((value) => levelSpeed = value.toString());
+        .then((value) => {levelSpeed = value.toString()});
   }
 }
