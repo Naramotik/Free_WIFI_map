@@ -106,11 +106,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
     final canvas = Canvas(recorder);
     const size = Size(50, 50);
     final fillPaint = Paint();
-    fillPaint.color = Colors.white;
+    fillPaint.color = Colors.blueAccent;
     final strokePaint = Paint()
-      ..color = Colors.black
+      ..color = Colors.green
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+      ..strokeWidth = 3;
     const radius = 20.0;
 
     final circleOffset = Offset(size.height / 2, size.width / 2);
@@ -189,13 +189,15 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
         mapObjectId = MapObjectId(jsonList[jsonList.indexOf(item)]['latitude']);
         var placemark = PlacemarkMapObject(
+            //icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromAssetImage("assets/img.png"), isVisible: true)),
+            //text: PlacemarkText(text: "FAST", style: PlacemarkTextStyle(color: Colors.red, offsetFromIcon: false, offset: 3, placement: TextStylePlacement.top)),
             mapId: mapObjectId,
             point: Point(
                 latitude:
                     double.parse(jsonList[jsonList.indexOf(item)]['latitude']),
                 longitude: double.parse(
                     jsonList[jsonList.indexOf(item)]['longitude'])),
-            opacity: 200,
+            opacity: 1,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
                   image:
