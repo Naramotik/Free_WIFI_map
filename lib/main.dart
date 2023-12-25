@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui';
 
-//import 'package:android_flutter_wifi/android_flutter_wifi.dart';
 import 'package:android_flutter_wifi/android_flutter_wifi.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,6 +11,7 @@ import 'package:free_wifi_map/firebase/account_screen.dart';
 import 'package:free_wifi_map/firebase/services/firebase_stream.dart';
 import 'package:free_wifi_map/firebase/signup_screen.dart';
 import 'package:free_wifi_map/firebase_options.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +80,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
   static const Point _startPoint =
       Point(latitude: 56.129057, longitude: 40.406635);
   final permissionLocation = Permission.location;
-  String baseUrl = '192.168.1.15';
+  String baseUrl = '192.168.0.112';
 
   // Логика для создания нового id для метки
   int counter = 1;
@@ -195,7 +194,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                     double.parse(jsonList[jsonList.indexOf(item)]['latitude']),
                 longitude: double.parse(
                     jsonList[jsonList.indexOf(item)]['longitude'])),
-            opacity: 200,
+            opacity: 1,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
                   image:
@@ -447,26 +446,33 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   // Всплывающее меню (само меню)
-  SingleChildScrollView _buildBottomNavMenu(Point point, String grade, String displayname) {
+  SingleChildScrollView _buildBottomNavMenu(
+      Point point, String grade, String displayname, String adress) {
     double rating_glob = 0;
     String displaygrade = '0.0';
     return SingleChildScrollView(
       child: Column(
         children: [
-          Row(
-            children: <Widget>[
-              Expanded(
+          Row(children: <Widget>[
+            Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 10),
                 child: Center(
-                  child:
-                    Text(ssid, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),),
+                  child: Column(
+                    children: [
+                      Text(
+                        ssid,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w700),
+                      ),
+                      Container(height: 20),
+                      Text(adress)
+                    ],
+                  ),
                 ),
               ),
             ),
           ]),
-
-
           Row(
             children: <Widget>[
               const Expanded(
@@ -526,7 +532,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         child: TextButton(
                           onPressed: () async {
                             displaygrade =
-                            await _setGrade(rating_glob, point, grade);
+                                await _setGrade(rating_glob, point, grade);
                             Navigator.pop(context);
                             EasyLoading.showSuccess('Оценка отправлена');
                             setState(() {
@@ -549,9 +555,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 child: Column(
                   children: [
                     ListTile(
-                      title: Text(
-                          signalLevel,
-                          textAlign: TextAlign.right),
+                      title: Text(signalLevel, textAlign: TextAlign.right),
                     ),
                   ],
                 ),
@@ -561,24 +565,20 @@ class _YandexMapTestState extends State<YandexMapTest> {
           Row(
             children: <Widget>[
               const Expanded(
-                child: ListTile(
-                    leading: Icon(Icons.speed),
-                    title: Text('Speed')),
+                child:
+                    ListTile(leading: Icon(Icons.speed), title: Text('Speed')),
               ),
               Expanded(
                 child: Column(
                   children: [
                     ListTile(
-                      title: Text(
-                          level,
-                          textAlign: TextAlign.right),
+                      title: Text(level, textAlign: TextAlign.right),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-
           InkWell(
             onTap: () => {_buildReviewMenu(point)},
             child: const Row(
@@ -632,8 +632,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
             ],
           ),
           InkWell(
-            onTap: () {
-            }, // Удалить свою метку
+            onTap: () {}, // Удалить свою метку
             child: Row(
               children: <Widget>[
                 Expanded(
@@ -694,6 +693,20 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   // Всплывающее меню (вызов меню)
   Future<void> _showToast(Point point, String? displayname) async {
+    String adress = '';
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(point.latitude, point.longitude);
+    if (placemarks != null && placemarks.isNotEmpty) {
+      print(placemarks[0].thoroughfare);
+      print('____________');
+      print(placemarks[0].subThoroughfare);
+      print('____________');
+      print(placemarks[0].street);
+      adress =
+          'Адрес: ${placemarks[0].thoroughfare} дом: ${placemarks[0].subThoroughfare}';
+    } else {
+      print('go away');
+    }
     getOpeningMarkInfo(point);
     var grade =
         await Dio().get("http://$baseUrl:8080/grade/${point.latitude}/avg");
@@ -707,8 +720,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
         builder: (context) {
           return Container(
             height: 330,
-            child:
-                _buildBottomNavMenu(point, grade.data.toString(), displayname!),
+            child: _buildBottomNavMenu(
+                point, grade.data.toString(), displayname!, adress),
           );
         }).whenComplete(() {
       ssid = 'NO INFO';
@@ -746,69 +759,69 @@ class _YandexMapTestState extends State<YandexMapTest> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: YandexMap(
-          mapObjects: mapObjects,
-          onMapCreated: (YandexMapController yandexMapController) async {
-            setState(() {
-              // Перемещение камеры на заданный startPoint
-              // при запуске приложения
-              controller = yandexMapController;
-              controller.moveCamera(
-                CameraUpdate.newCameraPosition(
-                  const CameraPosition(
-                    target: _startPoint,
-                    zoom: 10,
-                  ),
+        mapObjects: mapObjects,
+        onMapCreated: (YandexMapController yandexMapController) async {
+          setState(() {
+            // Перемещение камеры на заданный startPoint
+            // при запуске приложения
+            controller = yandexMapController;
+            controller.moveCamera(
+              CameraUpdate.newCameraPosition(
+                const CameraPosition(
+                  target: _startPoint,
+                  zoom: 10,
                 ),
-                animation: animation,
-              );
-            });
-          },
-          // onMapTap: (Point selectedPoint) async {
-          //   if (addingButtonStatus == true) {
-          //     // Задание нового id для метки
-          //     counterPlus();
-          //     mapObjectId = MapObjectId("$mapObjectId + $counter");
-          //
-          //     // Создание метки при нажатии на карту + Вывод информации о метке
-          //     print('Tapped map at $selectedPoint'); // для проверки
-          //     final placemark = PlacemarkMapObject(
-          //         mapId: mapObjectId,
-          //         point: selectedPoint,
-          //         opacity: 200,
-          //         icon: PlacemarkIcon.single(
-          //           PlacemarkIconStyle(
-          //               image: BitmapDescriptor.fromBytes(
-          //                   await _rawPlacemarkImage())),
-          //         ),
-          //         onTap: (PlacemarkMapObject self, Point point) async {
-          //           Point newPoint = self.point;
-          //           print('Tapped me at $newPoint');
-          //           var response = await Dio()
-          //               .get("http://$baseUrl:8080/mark/${newPoint.longitude}");
-          //           _showToast(
-          //               newPoint, response.data['client']['displayName']);
-          //         });
-          //     try {
-          //       var response =
-          //           await Dio().post('http://$baseUrl:8080/mark', data: {
-          //         "mark": {
-          //           'latitude': selectedPoint.latitude,
-          //           'longitude': selectedPoint.longitude
-          //         },
-          //         "email": user!.email.toString()
-          //       });
-          //       print(response);
-          //     } on DioException catch (e) {
-          //       print(e.message);
-          //     }
-          //
-          //     // Добавление метки на карту (в массив меток)
-          //     setState(() {
-          //       mapObjects.add(placemark);
-          //     });
-          //   }
-          // }
-          ),
+              ),
+              animation: animation,
+            );
+          });
+        },
+        // onMapTap: (Point selectedPoint) async {
+        //   if (addingButtonStatus == true) {
+        //     // Задание нового id для метки
+        //     counterPlus();
+        //     mapObjectId = MapObjectId("$mapObjectId + $counter");
+        //
+        //     // Создание метки при нажатии на карту + Вывод информации о метке
+        //     print('Tapped map at $selectedPoint'); // для проверки
+        //     final placemark = PlacemarkMapObject(
+        //         mapId: mapObjectId,
+        //         point: selectedPoint,
+        //         opacity: 200,
+        //         icon: PlacemarkIcon.single(
+        //           PlacemarkIconStyle(
+        //               image: BitmapDescriptor.fromBytes(
+        //                   await _rawPlacemarkImage())),
+        //         ),
+        //         onTap: (PlacemarkMapObject self, Point point) async {
+        //           Point newPoint = self.point;
+        //           print('Tapped me at $newPoint');
+        //           var response = await Dio()
+        //               .get("http://$baseUrl:8080/mark/${newPoint.longitude}");
+        //           _showToast(
+        //               newPoint, response.data['client']['displayName']);
+        //         });
+        //     try {
+        //       var response =
+        //           await Dio().post('http://$baseUrl:8080/mark', data: {
+        //         "mark": {
+        //           'latitude': selectedPoint.latitude,
+        //           'longitude': selectedPoint.longitude
+        //         },
+        //         "email": user!.email.toString()
+        //       });
+        //       print(response);
+        //     } on DioException catch (e) {
+        //       print(e.message);
+        //     }
+        //
+        //     // Добавление метки на карту (в массив меток)
+        //     setState(() {
+        //       mapObjects.add(placemark);
+        //     });
+        //   }
+        // }
+      ),
       floatingActionButton:
           Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         Expanded(
@@ -878,9 +891,21 @@ class _YandexMapTestState extends State<YandexMapTest> {
                   getServerSSID();
                   print(serverSSID);
                   getLevelSpeed();
-                  print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
+                  print(levelSpeed);
 
-                  List<WifiNetwork> wifiList = await AndroidFlutterWifi.getWifiScanResult();
+                  List<WifiNetwork> wifiList =
+                      await AndroidFlutterWifi.getWifiScanResult();
                   for (int i = 0; i < wifiList.length; i++) {
                     if (wifiList.isNotEmpty) {
                       WifiNetwork wifiNetwork = wifiList[i];
@@ -930,13 +955,15 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         onTap: (PlacemarkMapObject self, Point point) async {
                           Point newPoint = self.point;
                           print('Tapped me at $selectedPoint');
-                          var response = await Dio().get("http://$baseUrl:8080/mark/${selectedPoint.longitude}");
-                          _showToast(
-                              selectedPoint, response.data['client']['displayName']);
+                          var response = await Dio().get(
+                              "http://$baseUrl:8080/mark/${selectedPoint.longitude}");
+                          _showToast(selectedPoint,
+                              response.data['client']['displayName']);
                         });
                     try {
-                      if (levelSpeed == 'true'){
-                        var response = await Dio().post('http://$baseUrl:8080/mark', data: {
+                      if (levelSpeed == 'true') {
+                        var response = await Dio()
+                            .post('http://$baseUrl:8080/mark', data: {
                           "mark": {
                             'latitude': selectedPoint.latitude,
                             'longitude': selectedPoint.longitude,
@@ -949,7 +976,8 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         });
                         print(response);
                       } else {
-                        var response = await Dio().post('http://$baseUrl:8080/mark', data: {
+                        var response = await Dio()
+                            .post('http://$baseUrl:8080/mark', data: {
                           "mark": {
                             'latitude': selectedPoint.latitude,
                             'longitude': selectedPoint.longitude,
@@ -962,7 +990,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
                         });
                         print(response);
                       }
-
                     } on DioException catch (e) {
                       print(e.message);
                     }
@@ -977,8 +1004,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 child: const Icon(Icons.gps_fixed)),
           ),
         ),
-
-
         Expanded(
           flex: 0,
           child: FloatingActionButton(
@@ -1028,8 +1053,9 @@ class _YandexMapTestState extends State<YandexMapTest> {
   }
 
   var levelSpeed = '';
+
   void getLevelSpeed() async {
-    var result = await AndroidFlutterWifi.isConnectionFast().then((value) =>
-    levelSpeed = value.toString());
+    var result = await AndroidFlutterWifi.isConnectionFast()
+        .then((value) => levelSpeed = value.toString());
   }
 }
