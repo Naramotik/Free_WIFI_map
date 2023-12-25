@@ -95,10 +95,10 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   Position? _currentLocation;
 
-  var ssid = '';
-  var signalLevel = '';
-  var frequency = '';
-  var level = '';
+  var ssid = 'NO INFO';
+  var signalLevel = 'NO INFO';
+  var frequency = 'NO INFO';
+  var level = 'NO INFO';
 
   // Рисовалка кружков
   Future<Uint8List> _rawPlacemarkImage() async {
@@ -126,7 +126,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
     return pngBytes!.buffer.asUint8List();
   }
 
-  String ssidByIot = 'nuul IOT';
+  String ssidByIot = 'ur wifi null';
 
   getWifiList() async {
     DhcpInfo dhcpInfo = await AndroidFlutterWifi.getDhcpInfo();
@@ -448,15 +448,25 @@ class _YandexMapTestState extends State<YandexMapTest> {
 
   // Всплывающее меню (само меню)
   SingleChildScrollView _buildBottomNavMenu(Point point, String grade, String displayname) {
-
-    //getOpeningMarkInfo(point);
-
-
     double rating_glob = 0;
     String displaygrade = '0.0';
     return SingleChildScrollView(
       child: Column(
         children: [
+          Row(
+            children: <Widget>[
+              Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20, bottom: 10),
+                child: Center(
+                  child:
+                    Text(ssid, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),),
+                ),
+              ),
+            ),
+          ]),
+
+
           Row(
             children: <Widget>[
               const Expanded(
@@ -471,7 +481,7 @@ class _YandexMapTestState extends State<YandexMapTest> {
                       title: Text(
                           double.tryParse(grade)!.isNaN
                               ? '0.0'
-                              : grade.toString(),
+                              : grade.toString().substring(0, 3),
                           textAlign: TextAlign.right),
                     ),
                   ],
@@ -485,60 +495,90 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Expanded(
-                    flex: 3,
-                    child: Container(
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black12)),
-                      width: 200,
-                      alignment: Alignment.center,
-                      child: RatingBar.builder(
-                        minRating: 1,
-                        maxRating: 5,
-                        itemSize: 25,
-                        itemBuilder: (context, _) => const Icon(
-                          Icons.star,
-                          color: Colors.amber,
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 23.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white)),
+                        width: 200,
+                        alignment: Alignment.center,
+                        child: RatingBar.builder(
+                          minRating: 1,
+                          maxRating: 5,
+                          itemSize: 25,
+                          itemBuilder: (context, _) => const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          updateOnDrag: true,
+                          onRatingUpdate: (rating) => setState(() {
+                            rating_glob = rating;
+                          }),
                         ),
-                        updateOnDrag: true,
-                        onRatingUpdate: (rating) => setState(() {
-                          rating_glob = rating;
-                        }),
                       ),
                     ),
                   ),
                   Expanded(
-                    flex: 5,
+                    flex: 2,
                     child: Container(
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () async {
                             displaygrade =
-                                await _setGrade(rating_glob, point, grade);
+                            await _setGrade(rating_glob, point, grade);
                             Navigator.pop(context);
                             EasyLoading.showSuccess('Оценка отправлена');
                             setState(() {
                               grade = displaygrade;
                             });
                           },
-                          child: const Text('send'),
+                          child: const Text('SEND'),
                         )),
                   ),
                 ]),
           ),
           Row(
             children: <Widget>[
-              Expanded(
+              const Expanded(
                 child: ListTile(
-                  leading: Icon(Icons.people_alt_outlined),
-                  title: Text('Added by'),
-                ),
+                    leading: Icon(Icons.signal_cellular_alt_sharp),
+                    title: Text('Signal level, range [1-5]')),
               ),
               Expanded(
-                child: ListTile(
-                    title: Text(displayname, textAlign: TextAlign.right)),
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                          signalLevel,
+                          textAlign: TextAlign.right),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
+          Row(
+            children: <Widget>[
+              const Expanded(
+                child: ListTile(
+                    leading: Icon(Icons.speed),
+                    title: Text('Speed')),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                          level,
+                          textAlign: TextAlign.right),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
           InkWell(
             onTap: () => {_buildReviewMenu(point)},
             child: const Row(
@@ -577,10 +617,22 @@ class _YandexMapTestState extends State<YandexMapTest> {
               ],
             ),
           ),
+          Row(
+            children: <Widget>[
+              const Expanded(
+                child: ListTile(
+                  leading: Icon(Icons.people_alt_outlined),
+                  title: Text('Added by'),
+                ),
+              ),
+              Expanded(
+                child: ListTile(
+                    title: Text(displayname, textAlign: TextAlign.right)),
+              ),
+            ],
+          ),
           InkWell(
             onTap: () {
-              setState() {}
-              ;
             }, // Удалить свою метку
             child: Row(
               children: <Widget>[
@@ -628,78 +680,6 @@ class _YandexMapTestState extends State<YandexMapTest> {
               ],
             ),
           ),
-          InkWell(
-            onTap: () {
-              setState() {}
-              ;
-            },
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 5,
-                  child: TextButton(
-                      onPressed: () async {
-                        ;
-                      },
-                      child: Text(
-                        "${ssid}",
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16),
-                      )),
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState() {}
-              ;
-            }, // Удалить свою метку
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 5,
-                  child: TextButton(
-                      onPressed: () async {
-                        ;
-                      },
-                      child: Text(
-                        "${signalLevel}",
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16),
-                      )),
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState() {}
-              ;
-            }, // Удалить свою метку
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 5,
-                  child: TextButton(
-                      onPressed: () async {
-                        ;
-                      },
-                      child: Text(
-                        "${level}",
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16),
-                      )),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -731,6 +711,10 @@ class _YandexMapTestState extends State<YandexMapTest> {
                 _buildBottomNavMenu(point, grade.data.toString(), displayname!),
           );
         }).whenComplete(() {
+      ssid = 'NO INFO';
+      signalLevel = 'NO INFO';
+      frequency = 'NO INFO';
+      level = 'NO INFO';
       isVisible = true;
     });
   }
@@ -857,172 +841,153 @@ class _YandexMapTestState extends State<YandexMapTest> {
             ),
           ),
         ),
-        Expanded(
-          flex: 2,
-          child: Container(
-            decoration: const ShapeDecoration(
-              color: Colors.black45,
-              shape: CircleBorder(),
-            ),
-            child: IconButton(
-              onPressed: () {
-                iot.WiFiForIoTPlugin.connect('MTSRouter-5G-B9C733',
-                    password: '61647596',
-                    joinOnce: true,
-                    security: STA_DEFAULT_SECURITY);
-              },
-              icon: Icon(
-                Icons.person,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Container(
-            decoration: const ShapeDecoration(
-              color: Colors.black45,
-              shape: CircleBorder(),
-            ),
-            child: IconButton(
-              onPressed: () {
-                getWifiList();
-              },
-              icon: Icon(
-                Icons.person,
-              ),
-            ),
-          ),
-        ),
-        const Spacer(
-          flex: 5,
-        ),
-        Expanded(
-          flex: 1,
-          child: FloatingActionButton(
-              heroTag: "location",
-              backgroundColor: Colors.black87,
-              onPressed: () async {
-                final status = await permissionLocation.request();
-                if (status == PermissionStatus.granted) {
-                  _currentLocation = await Geolocator.getCurrentPosition();
-                  setState(() {
-                    // Перемещение камеры на заданный startPoint при запуске приложения
-                    controller.moveCamera(
-                      CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                            target: Point(
-                                latitude: _currentLocation!.latitude,
-                                longitude: _currentLocation!.longitude),
-                            zoom: 20),
-                      ),
-                      animation: animation,
-                    );
-                  });
-                } else {
-                  print('Location permission denied.');
-                }
-
-                //Данные для создания точки
-                getServerSSID();
-                print(serverSSID);
-
-                List<WifiNetwork> wifiList = await AndroidFlutterWifi.getWifiScanResult();
-                for (int i = 0; i < wifiList.length; i++) {
-                  if (wifiList.isNotEmpty) {
-                    WifiNetwork wifiNetwork = wifiList[i];
-                    //Установка данных со списка всех сетей
-                    if (wifiNetwork.ssid == serverSSID) {
-                      ssid = wifiNetwork.ssid!;
-                      signalLevel = wifiNetwork.signalLevel!;
-                      frequency = wifiNetwork.frequency!;
-                      level = wifiNetwork.level!;
-                    }
-                    print('ssid: ${wifiNetwork.ssid}');
-                    print('signalLevel: ${wifiNetwork.signalLevel}');
-                    print('bssid: ${wifiNetwork.bssid}');
-                    print('frequency: ${wifiNetwork.frequency}');
-                    print('level: ${wifiNetwork.level}');
-                    print('security: ${wifiNetwork.security}');
-                    print('Name:---------------------------');
-                  } else {
-                    print("empty");
-                    print("empty");
-                  }
-                }
-                addingButtonStatus = true;
-
-                if (addingButtonStatus == true) {
-                  // Задание нового id для метки
-                  counterPlus();
-                  mapObjectId = MapObjectId("$mapObjectId + $counter");
-                  Point selectedPoint = new Point(
-                      latitude: _currentLocation!.latitude,
-                      longitude: _currentLocation!.longitude);
-                  // Создание метки при нажатии на карту + Вывод информации о метке
-                  print('Tapped map at $selectedPoint'); // для проверки
-                  final placemark = PlacemarkMapObject(
-                      mapId: mapObjectId,
-                      point: selectedPoint,
-                      opacity: 200,
-                      icon: PlacemarkIcon.single(
-                        PlacemarkIconStyle(
-                            image: BitmapDescriptor.fromBytes(
-                                await _rawPlacemarkImage())),
-                      ),
-                      onTap: (PlacemarkMapObject self, Point point) async {
-                        Point newPoint = self.point;
-                        print('Tapped me at $selectedPoint');
-                        var response = await Dio().get("http://$baseUrl:8080/mark/${selectedPoint.longitude}");
-                        print(response.data['client']['displayName']);print(response.data['client']['displayName']);print(response.data['client']['displayName']);print(response.data['client']['displayName']);print(response.data['client']['displayName']);
-                        _showToast(
-                            selectedPoint, response.data['client']['displayName']);
-                      });
-                  try {
-                    var response =
-                        await Dio().post('http://$baseUrl:8080/mark', data: {
-                      "mark": {
-                        'latitude': selectedPoint.latitude,
-                        'longitude': selectedPoint.longitude,
-                        'ssid': ssid,
-                        'signalLevel': signalLevel,
-                        'frequency': frequency,
-                        'level': level,
-                      },
-                      "email": user!.email.toString()
-                    });
-                    print(response);
-                  } on DioException catch (e) {
-                    print(e.message);
-                  }
-
-                  // Добавление метки на карту (в массив меток)
-                  setState(() {
-                    mapObjects.add(placemark);
-                    counterPlus();
-                  });
-                }
-              },
-              child: const Icon(Icons.gps_fixed)),
-        ),
-
-
+        SizedBox(height: 400),
         Visibility(
           visible: isLogin(),
           replacement: const SizedBox(
-            height: 0,
+            height: 90,
             width: 0,
           ),
           child: Expanded(
-            flex: 0,
+            flex: 1,
             child: FloatingActionButton(
-                heroTag: "place",
+                heroTag: "location",
                 backgroundColor: Colors.black87,
-                onPressed: () {
+                onPressed: () async {
+                  final status = await permissionLocation.request();
+                  if (status == PermissionStatus.granted) {
+                    _currentLocation = await Geolocator.getCurrentPosition();
+                    setState(() {
+                      // Перемещение камеры на заданный startPoint при запуске приложения
+                      controller.moveCamera(
+                        CameraUpdate.newCameraPosition(
+                          CameraPosition(
+                              target: Point(
+                                  latitude: _currentLocation!.latitude,
+                                  longitude: _currentLocation!.longitude),
+                              zoom: 20),
+                        ),
+                        animation: animation,
+                      );
+                    });
+                  } else {
+                    print('Location permission denied.');
+                  }
+
+                  //Данные для создания точки
+                  getServerSSID();
+                  print(serverSSID);
+                  getLevelSpeed();
+                  print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);print(levelSpeed);
+
+                  List<WifiNetwork> wifiList = await AndroidFlutterWifi.getWifiScanResult();
+                  for (int i = 0; i < wifiList.length; i++) {
+                    if (wifiList.isNotEmpty) {
+                      WifiNetwork wifiNetwork = wifiList[i];
+                      //Установка данных со списка всех сетей
+                      if (wifiNetwork.ssid == serverSSID) {
+                        ssid = wifiNetwork.ssid!;
+                        signalLevel = wifiNetwork.signalLevel!;
+                        frequency = wifiNetwork.frequency!;
+                        // var response = AndroidFlutterWifi.isConnectionFast();
+                        // if (response){
+                        //
+                        // }
+                        level = wifiNetwork.level!;
+                      }
+                      print('ssid: ${wifiNetwork.ssid}');
+                      print('signalLevel: ${wifiNetwork.signalLevel}');
+                      print('bssid: ${wifiNetwork.bssid}');
+                      print('frequency: ${wifiNetwork.frequency}');
+                      print('level: ${wifiNetwork.level}');
+                      print('security: ${wifiNetwork.security}');
+                      print('Name:---------------------------');
+                    } else {
+                      print("empty");
+                      print("empty");
+                    }
+                  }
                   addingButtonStatus = true;
+
+                  if (addingButtonStatus == true) {
+                    // Задание нового id для метки
+                    counterPlus();
+                    mapObjectId = MapObjectId("$mapObjectId + $counter");
+                    Point selectedPoint = new Point(
+                        latitude: _currentLocation!.latitude,
+                        longitude: _currentLocation!.longitude);
+                    // Создание метки при нажатии на карту + Вывод информации о метке
+                    print('Tapped map at $selectedPoint'); // для проверки
+                    final placemark = PlacemarkMapObject(
+                        mapId: mapObjectId,
+                        point: selectedPoint,
+                        opacity: 200,
+                        icon: PlacemarkIcon.single(
+                          PlacemarkIconStyle(
+                              image: BitmapDescriptor.fromBytes(
+                                  await _rawPlacemarkImage())),
+                        ),
+                        onTap: (PlacemarkMapObject self, Point point) async {
+                          Point newPoint = self.point;
+                          print('Tapped me at $selectedPoint');
+                          var response = await Dio().get("http://$baseUrl:8080/mark/${selectedPoint.longitude}");
+                          _showToast(
+                              selectedPoint, response.data['client']['displayName']);
+                        });
+                    try {
+                      if (levelSpeed == 'true'){
+                        var response = await Dio().post('http://$baseUrl:8080/mark', data: {
+                          "mark": {
+                            'latitude': selectedPoint.latitude,
+                            'longitude': selectedPoint.longitude,
+                            'ssid': ssid,
+                            'signalLevel': signalLevel,
+                            'frequency': frequency,
+                            'level': "FAST",
+                          },
+                          "email": user!.email.toString()
+                        });
+                        print(response);
+                      } else {
+                        var response = await Dio().post('http://$baseUrl:8080/mark', data: {
+                          "mark": {
+                            'latitude': selectedPoint.latitude,
+                            'longitude': selectedPoint.longitude,
+                            'ssid': ssid,
+                            'signalLevel': signalLevel,
+                            'frequency': frequency,
+                            'level': "FAST",
+                          },
+                          "email": user!.email.toString()
+                        });
+                        print(response);
+                      }
+
+                    } on DioException catch (e) {
+                      print(e.message);
+                    }
+
+                    // Добавление метки на карту (в массив меток)
+                    setState(() {
+                      mapObjects.add(placemark);
+                      counterPlus();
+                    });
+                  }
                 },
-                child: const Icon(Icons.place)),
+                child: const Icon(Icons.gps_fixed)),
           ),
+        ),
+
+
+        Expanded(
+          flex: 0,
+          child: FloatingActionButton(
+              heroTag: "place",
+              backgroundColor: Colors.black87,
+              onPressed: () {
+                addingButtonStatus = true;
+              },
+              child: const Icon(Icons.place)),
         ),
       ]),
     );
@@ -1060,5 +1025,11 @@ class _YandexMapTestState extends State<YandexMapTest> {
       frequency = response.data["frequency"];
       print(response.data["ssid"]);
     });
+  }
+
+  var levelSpeed = '';
+  void getLevelSpeed() async {
+    var result = await AndroidFlutterWifi.isConnectionFast().then((value) =>
+    levelSpeed = value.toString());
   }
 }
